@@ -1,0 +1,4 @@
+# Private signing keys never belong in this repo (offline-only, EP-0042 D5)
+*.seed
+*.key
+.stado/*.seed

@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "author": "stado example",
   "author_pubkey_fpr": "57a3e58ce484c5e5",
-  "wasm_sha256": "5a1ca66610af53141b58f2f1782ffa64b2f7020d629cb3f5ef5a475a3d74b586",
+  "wasm_sha256": "403efd04ee255a074a715fc3c5091939f77a16f837fc0289621e56d9eff5c4b7",
   "capabilities": [
     "net:http_request",
     "net:http_request_private",

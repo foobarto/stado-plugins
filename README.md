@@ -58,3 +58,25 @@ These were migrated out of the main `stado` repo (EP-0042) to keep compiled
 binaries out of the source tree. The wasm here is the same proven build that
 shipped in `stado` ≤ v0.52.x; future versions rebuild from source in this
 repo's CI (binaries built in CI, manifests signed offline).
+
+## License
+
+Licensed under either of
+
+- Apache License, Version 2.0
+  ([LICENSE-APACHE](LICENSE-APACHE) or
+  <http://www.apache.org/licenses/LICENSE-2.0>)
+- MIT license
+  ([LICENSE-MIT](LICENSE-MIT) or
+  <http://opensource.org/licenses/MIT>)
+
+at your option.
+
+`SPDX-License-Identifier: MIT OR Apache-2.0`
+
+### Contribution
+
+Unless you explicitly state otherwise, any contribution intentionally
+submitted for inclusion in the work by you, as defined in the Apache-2.0
+license, shall be dual licensed as above, without any additional terms
+or conditions.

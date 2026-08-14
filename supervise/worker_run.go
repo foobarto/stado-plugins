@@ -61,7 +61,14 @@ func (r applicationWorkerRun) validate() error {
 		if !boundedRequired(r.TerminalReason, 4<<10) || r.TerminalSequence == 0 {
 			return errors.New("resume-requested worker run lacks interruption provenance")
 		}
-	case workerRunCancelled, workerRunCompleted, workerRunInterrupted, workerRunStopped:
+	case workerRunCancelled:
+		// Application cancellation is itself the terminal WorkerRun WAL
+		// transition. Unlike pause/stop/completion it has no separate control
+		// or completion sequence; WALSequence is the authoritative anchor.
+		if !boundedRequired(r.TerminalReason, 4<<10) || r.TerminalSequence != 0 {
+			return errors.New("cancelled worker run has invalid terminal metadata")
+		}
+	case workerRunCompleted, workerRunInterrupted, workerRunStopped:
 		if !boundedRequired(r.TerminalReason, 4<<10) || r.TerminalSequence == 0 {
 			return errors.New("terminal worker run lacks bounded terminal metadata")
 		}

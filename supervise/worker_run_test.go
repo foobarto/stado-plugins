@@ -30,10 +30,25 @@ func testWorkerRun(t *testing.T, contract supervisionContract, status string, ve
 		RunID: contract.RunID, Version: version, WALSequence: version + 10, Objective: contract.Objective, Prompt: prompt,
 		Conflict: "replace_operator_loop", Status: status, CreatedAt: now.Format(time.RFC3339Nano), UpdatedAt: now.Add(time.Duration(version) * time.Second).Format(time.RFC3339Nano),
 	}
-	if status == workerRunResumeRequested || status == workerRunCancelled || status == workerRunCompleted || status == workerRunInterrupted || status == workerRunStopped {
+	if status == workerRunResumeRequested || status == workerRunCompleted || status == workerRunInterrupted || status == workerRunStopped {
 		run.TerminalReason, run.TerminalSequence = "terminal transition", run.WALSequence
 	}
+	if status == workerRunCancelled {
+		run.TerminalReason = "terminal transition"
+	}
 	return run
+}
+
+func TestWorkerRunCancellationUsesOwnWALAnchorWithoutControlSequence(t *testing.T) {
+	contract := testWorkerContract(t)
+	cancelled := testWorkerRun(t, contract, workerRunCancelled, 3)
+	if err := cancelled.validate(); err != nil {
+		t.Fatal(err)
+	}
+	cancelled.TerminalSequence = cancelled.WALSequence
+	if err := cancelled.validate(); err == nil || !strings.Contains(err.Error(), "cancelled") {
+		t.Fatalf("cancellation accepted a fabricated separate terminal sequence: %v", err)
+	}
 }
 
 func TestWorkerResumeRequestPreservesExactInterruptedIdentity(t *testing.T) {

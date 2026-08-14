@@ -166,7 +166,7 @@ Every baseline/reviewer/verifier request carries a stable application-scoped
 `idempotency_key` and unique quality-only ownership label. Generic Fleet
 admission returns the exact child for same-process/module replay and rejects a
 changed request under that key. If a callback loses the spawn reply before the
-child ID is journalled, the durable intent can bind authenticated terminal
+Fleet control handle is journalled, the durable intent can bind authenticated terminal
 facts only from that unique child. After process restart, the previous
 process-local Fleet child is gone, so polling the same durable intent admits
 and journals one replacement without consuming another policy attempt. No
@@ -203,8 +203,9 @@ Terminal children arrive through the separate generic, strict
 `stado.dev/agent-down-facts/v1` contract in
 [AGENT-DOWN-FACTS.md](AGENT-DOWN-FACTS.md). Parent session and generation come
 only from the authenticated event envelope. The plugin binds an observation to
-a review only for the exact pending child, compares its generic identity,
-scope, budget, change, and immutable evidence facts with the signed spawn
+a review only for the exact pending Fleet control handle. The separate child
+session ID binds immutable tree and trace evidence. The plugin compares the
+remaining generic identity, scope, budget, change, and evidence facts with the signed spawn
 request, and derives any policy rejection itself. Host token counters are
 accumulated once from this durable event; polling is only the source of the
 semantic verdict. A poll that races ahead waits for the event, and bounded

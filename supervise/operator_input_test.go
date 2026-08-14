@@ -175,7 +175,7 @@ func TestValidOperatorInputClassificationSurvivesCleanupDiagnostic(t *testing.T)
 	terminal := agentTerminalMetadata{Usage: agentTokenUsage{InputTokens: 5, OutputTokens: 2}, UsageComplete: true, Cleanup: cleanup}
 	route.Terminal = &reviewTerminalObservation{
 		ReviewID: route.ReviewID, Purpose: reviewPurposeOperatorInput,
-		Child: agentDownChild{SessionID: "child", Status: "completed"}, Terminal: terminal,
+		Child: agentDownChild{AgentID: "child", SessionID: "child", Status: "completed"}, Terminal: terminal,
 	}
 	result := operatorInputReviewerResult{Classification: operatorInputClassification{
 		ReviewID: route.ReviewID, InputID: route.InputID, Anchor: route.ReviewAnchor,
@@ -218,7 +218,7 @@ func TestOperatorInputReviewSpawnRebindReplacesDeadProcessLocalChild(t *testing.
 	if changed, err := state.acceptOperatorInputReviewSpawn(route, "old-process-child"); err != nil || !changed {
 		t.Fatalf("initial child: changed=%v err=%v", changed, err)
 	}
-	route.Terminal = &reviewTerminalObservation{BrokerSequence: 7, ReviewID: route.ReviewID, Child: agentDownChild{SessionID: "old-process-child"}}
+	route.Terminal = &reviewTerminalObservation{BrokerSequence: 7, ReviewID: route.ReviewID, Child: agentDownChild{AgentID: "old-process-child", SessionID: "old-process-child"}}
 	route.AgentOffset = 9
 	route.RetryAt = time.Now().Add(-time.Second)
 	if changed, err := state.acceptOperatorInputReviewSpawn(route, "replacement-child"); err != nil || !changed {

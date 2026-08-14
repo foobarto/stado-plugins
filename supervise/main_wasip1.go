@@ -273,7 +273,7 @@ func stadoPluginEvent(inputPointer, inputLength, resultPointer, resultCapacity i
 				err = app.persist("review.agent_down_observed", envelope.Event.EvidenceRefs)
 			}
 			if err == nil && matchingReview {
-				if app.state.operatorInputReviewByChild(facts.Child.SessionID, facts.Scope.Ownership) != nil {
+				if app.state.operatorInputReviewByChild(facts.Child.AgentID, facts.Scope.Ownership) != nil {
 					err = app.reconcileOperatorInputRoutes()
 				} else {
 					err = app.pollReviewer()

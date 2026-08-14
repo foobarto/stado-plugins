@@ -33,7 +33,7 @@ func observePendingTerminal(t *testing.T, state *runState, terminal agentTermina
 	facts := agentDownFacts{
 		Schema: agentDownFactsSchema,
 		Child: &agentDownChild{
-			SessionID: state.PendingReview.AgentID, Status: childStatus,
+			AgentID: state.PendingReview.AgentID, SessionID: state.PendingReview.AgentID, Status: childStatus,
 			Role: "explorer", Mode: "read_only", Execution: "wait",
 		},
 		Budget: &agentDownBudget{
@@ -65,7 +65,7 @@ func diagnosticsContain(state runState, value string) bool {
 }
 
 func TestAgentDownStrictDecoderRejectsShapeDrift(t *testing.T) {
-	valid := `{"schema":"stado.dev/agent-down-facts/v1","child":{"session_id":"child","status":"completed","role":"explorer","mode":"read_only"},"budget":{"token_limit":2048,"turn_limit":4,"timeout_seconds":60},"terminal":{"usage":{"input_tokens":10,"output_tokens":2},"usage_complete":true},"scope":{"ownership":"supervise"}}`
+	valid := `{"schema":"stado.dev/agent-down-facts/v1","child":{"agent_id":"agent","session_id":"child","status":"completed","role":"explorer","mode":"read_only"},"budget":{"token_limit":2048,"turn_limit":4,"timeout_seconds":60},"terminal":{"usage":{"input_tokens":10,"output_tokens":2},"usage_complete":true},"scope":{"ownership":"supervise"}}`
 	if _, err := decodeAgentDownFacts([]byte(valid)); err != nil {
 		t.Fatalf("valid v1 facts rejected: %v", err)
 	}
@@ -90,7 +90,7 @@ func TestAgentDownBindsExactParentChildScopeChangesAndRefs(t *testing.T) {
 	complete := true
 	facts := agentDownFacts{
 		Schema: agentDownFactsSchema,
-		Child:  &agentDownChild{SessionID: "review-child", Status: "completed", Role: "explorer", Mode: "read_only", Execution: "wait"},
+		Child:  &agentDownChild{AgentID: "review-child", SessionID: "review-child", Status: "completed", Role: "explorer", Mode: "read_only", Execution: "wait"},
 		Budget: &agentDownBudget{TokenLimit: 2048, TurnLimit: 4, TimeoutSeconds: 120},
 		Terminal: &agentDownTerminalMetadata{
 			Usage: &agentTokenUsage{InputTokens: 13, OutputTokens: 5}, UsageComplete: &complete,
@@ -135,7 +135,7 @@ func TestAgentDownAdoptsExactPendingReviewIntentAfterLostSpawnReply(t *testing.T
 	complete := true
 	facts := agentDownFacts{
 		Schema: agentDownFactsSchema,
-		Child:  &agentDownChild{SessionID: "recovered-child", Status: "completed", Role: "explorer", Mode: "read_only", Execution: "wait"},
+		Child:  &agentDownChild{AgentID: "recovered-child", SessionID: "recovered-child", Status: "completed", Role: "explorer", Mode: "read_only", Execution: "wait"},
 		Budget: &agentDownBudget{
 			TokenLimit: uint64(state.Config.WatchdogTokenBudget), TurnLimit: 4,
 			TimeoutSeconds: uint64(state.Config.WatchdogTimeoutSecond),
@@ -165,7 +165,7 @@ func TestAgentDownBindsExactOperatorInputReviewerAndLostSpawnReply(t *testing.T)
 	complete := true
 	facts := agentDownFacts{
 		Schema:   agentDownFactsSchema,
-		Child:    &agentDownChild{SessionID: "input-review-child", Status: "completed", Role: "explorer", Mode: "read_only", Execution: "wait"},
+		Child:    &agentDownChild{AgentID: "input-review-child", SessionID: "input-review-child", Status: "completed", Role: "explorer", Mode: "read_only", Execution: "wait"},
 		Budget:   &agentDownBudget{TokenLimit: uint64(state.Config.WatchdogTokenBudget), TurnLimit: 4, TimeoutSeconds: uint64(state.Config.WatchdogTimeoutSecond)},
 		Terminal: &agentDownTerminalMetadata{Usage: &agentTokenUsage{InputTokens: 8, OutputTokens: 3}, UsageComplete: &complete},
 		Scope:    &agentDownScope{Ownership: operatorInputReviewOwnership(state.RunID, route)},
@@ -352,7 +352,7 @@ func TestMalformedCleanupMetadataCannotBecomeApplicationInput(t *testing.T) {
 	complete := true
 	facts := agentDownFacts{
 		Schema:   agentDownFactsSchema,
-		Child:    &agentDownChild{SessionID: "child", Status: "completed"},
+		Child:    &agentDownChild{AgentID: "agent", SessionID: "child", Status: "completed"},
 		Budget:   &agentDownBudget{},
 		Terminal: &agentDownTerminalMetadata{Usage: &agentTokenUsage{}, UsageComplete: &complete, Cleanup: &agentCleanupDiagnostic{Kind: "provider_close", Fingerprint: strings.Repeat("x", 71)}},
 		Scope:    &agentDownScope{},

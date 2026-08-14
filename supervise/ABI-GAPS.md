@@ -115,13 +115,13 @@ baseline/reviewer/verifier spawn. Fleet namespaces the key by authenticated
 application/session/generation, binds it to the normalized request digest,
 serializes concurrent admission, returns the exact original child on replay,
 and conflicts on changed input. The plugin journals the logical intent before
-spawn; if the callback loses both reply and child ID, authenticated terminal
+spawn; if the callback loses both reply and Fleet control handle, authenticated terminal
 facts can bind only the uniquely labelled pending intent. Module rebind replays
 the same child. After a process restart, when the old process-local Fleet child
 is necessarily gone, the same key admits and journals one replacement without
 consuming a new policy attempt.
 
-Every boundary after a child ID is returned is restart-safe in this tree. The
+Every boundary after a Fleet control handle is returned is restart-safe in this tree. The
 plugin strictly validates the exact journal acknowledgement and forces an
 authoritative projection refold after any ambiguous append result. Setup cancel,
 baseline rejection/terminal/ready, artifact selection, worker request, and run
@@ -186,10 +186,12 @@ reviews remain on the event anchor and begin with a fresh conversation.
 
 Terminal child reads now carry host-collected input/output/cache token counters
 with an explicit completeness bit plus a bounded cleanup kind/fingerprint. The
-durable `agent.down` event carries the same facts together with generic child,
+durable `agent.down` event carries the same facts together with the distinct
+Fleet control handle and child session coordinate, plus generic child,
 admitted-budget, scope, change, failure-fingerprint, and immutable-evidence
 facts. The plugin strictly decodes that versioned payload, binds it to the exact
-pending child and authenticated parent envelope, and derives reviewer/verifier
+pending control handle and authenticated parent envelope, binds evidence to the
+child session, and derives reviewer/verifier
 policy in WASM. It journals watchdog and verifier usage separately and exactly
 once from the event. Agent polling supplies semantic output; a poll waits for
 the durable terminal observation and its terminal metadata must match. Usage

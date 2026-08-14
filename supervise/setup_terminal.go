@@ -24,11 +24,11 @@ func (s *setupState) observeAgentDown(parent authenticatedAgentParent, brokerSeq
 	// while the projection still says starting/failed. Adopt only the exact
 	// host-published child whose ownership matches that intent.
 	if (s.Phase == setupPhaseStarting || s.Phase == setupPhaseFailed) && facts.Scope.Ownership == baselineAgentOwnership(*s) {
-		if err := s.beginBaseline(facts.Child.SessionID); err != nil {
+		if err := s.beginBaseline(facts.Child.AgentID); err != nil {
 			return false, err
 		}
 	}
-	if facts.Child.SessionID != s.BaselineAgentID || s.Phase != setupPhaseRunning {
+	if facts.Child.AgentID != s.BaselineAgentID || s.Phase != setupPhaseRunning {
 		return false, nil
 	}
 	if err := validateAgentDownEvidenceRefs(facts.Child.SessionID, evidenceRefs, facts.Changes); err != nil {
@@ -38,7 +38,7 @@ func (s *setupState) observeAgentDown(parent authenticatedAgentParent, brokerSeq
 		return false, errors.New("baseline agent.down broker sequence moved backwards")
 	}
 	if brokerSequence == s.AgentDownSequence {
-		return s.Terminal != nil && s.Terminal.BrokerSequence == brokerSequence && s.Terminal.Child.SessionID == facts.Child.SessionID, nil
+		return s.Terminal != nil && s.Terminal.BrokerSequence == brokerSequence && s.Terminal.Child.AgentID == facts.Child.AgentID && s.Terminal.Child.SessionID == facts.Child.SessionID, nil
 	}
 	observation := reviewTerminalObservation{
 		BrokerSequence: brokerSequence, Parent: parent, Purpose: "baseline",

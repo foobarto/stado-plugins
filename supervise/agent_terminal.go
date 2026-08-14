@@ -44,6 +44,7 @@ type agentDownFacts struct {
 }
 
 type agentDownChild struct {
+	AgentID   string `json:"agent_id"`
 	SessionID string `json:"session_id"`
 	Status    string `json:"status"`
 	Role      string `json:"role,omitempty"`
@@ -135,7 +136,7 @@ func (f agentDownFacts) validate() error {
 	if f.Child == nil || f.Budget == nil || f.Terminal == nil || f.Scope == nil || f.Terminal.Usage == nil || f.Terminal.UsageComplete == nil {
 		return errors.New("agent.down facts omit required child, budget, terminal, usage, usage_complete, or scope")
 	}
-	if !boundedRequired(f.Child.SessionID, 256) || len(f.Child.Role) > 256 || len(f.Child.Mode) > 256 || len(f.Child.Execution) > 256 {
+	if !boundedRequired(f.Child.AgentID, 256) || !boundedRequired(f.Child.SessionID, 256) || len(f.Child.Role) > 256 || len(f.Child.Mode) > 256 || len(f.Child.Execution) > 256 {
 		return errors.New("agent.down child identity exceeds bounds")
 	}
 	switch f.Child.Status {
@@ -271,10 +272,11 @@ func (s *runState) observeAgentDown(parent authenticatedAgentParent, brokerSeque
 	if brokerSequence == s.AgentDownSequence {
 		if s.PendingReview != nil && s.PendingReview.Terminal != nil &&
 			s.PendingReview.Terminal.BrokerSequence == brokerSequence &&
+			s.PendingReview.Terminal.Child.AgentID == facts.Child.AgentID &&
 			s.PendingReview.Terminal.Child.SessionID == facts.Child.SessionID {
 			return true, nil
 		}
-		route := s.operatorInputReviewByChild(facts.Child.SessionID, facts.Scope.Ownership)
+		route := s.operatorInputReviewByChild(facts.Child.AgentID, facts.Scope.Ownership)
 		return route != nil && route.Terminal != nil && route.Terminal.BrokerSequence == brokerSequence, nil
 	}
 
@@ -288,11 +290,11 @@ func (s *runState) observeAgentDown(parent authenticatedAgentParent, brokerSeque
 		// The pending review and its unique spawn intent were durable before
 		// admission. Recover the child identity from authenticated terminal facts
 		// when a callback lost the successful spawn reply.
-		s.PendingReview.AgentID = facts.Child.SessionID
+		s.PendingReview.AgentID = facts.Child.AgentID
 		s.PendingReview.AgentOffset = 0
 		s.PendingReview.TokenBudget = reviewTokenBudget(s.Config, s.PendingReview)
 	}
-	matchingReview := s.PendingReview != nil && s.PendingReview.AgentID == facts.Child.SessionID
+	matchingReview := s.PendingReview != nil && s.PendingReview.AgentID == facts.Child.AgentID
 	matchingInput := false
 	if matchingReview {
 		observation.ReviewID = s.PendingReview.ID
@@ -307,9 +309,9 @@ func (s *runState) observeAgentDown(parent authenticatedAgentParent, brokerSeque
 		for _, diagnostic := range observation.diagnostics() {
 			s.Diagnostics = appendBounded(s.Diagnostics, "review agent.down: "+diagnostic, 32)
 		}
-	} else if route := s.operatorInputReviewByChild(facts.Child.SessionID, facts.Scope.Ownership); route != nil {
+	} else if route := s.operatorInputReviewByChild(facts.Child.AgentID, facts.Scope.Ownership); route != nil {
 		if route.AgentID == "" {
-			route.AgentID, route.AgentOffset, route.TokenBudget = facts.Child.SessionID, 0, s.Config.WatchdogTokenBudget
+			route.AgentID, route.AgentOffset, route.TokenBudget = facts.Child.AgentID, 0, s.Config.WatchdogTokenBudget
 		}
 		observation.ReviewID = route.ReviewID
 		observation.Purpose = reviewPurposeOperatorInput
@@ -490,7 +492,7 @@ func (s *runState) consumeReviewerMessages(messages agentMessages, observedAt ..
 	if observed == nil {
 		return transition{}, false, nil
 	}
-	if observed.Child.SessionID != s.PendingReview.AgentID || observed.ReviewID != s.PendingReview.ID || observed.Purpose != s.PendingReview.Purpose {
+	if observed.Child.AgentID != s.PendingReview.AgentID || observed.ReviewID != s.PendingReview.ID || observed.Purpose != s.PendingReview.Purpose {
 		return transition{}, false, errors.New("review terminal observation is not bound to the pending child")
 	}
 	if messages.Terminal == nil {

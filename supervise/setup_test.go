@@ -150,7 +150,7 @@ func TestBaselineTerminalAdoptsExactDurableSpawnIntentAfterLostReply(t *testing.
 	complete := true
 	facts := agentDownFacts{
 		Schema: agentDownFactsSchema,
-		Child:  &agentDownChild{SessionID: "baseline-child", Status: "completed", Role: "explorer", Mode: "read_only", Execution: "wait"},
+		Child:  &agentDownChild{AgentID: "baseline-child", SessionID: "baseline-child", Status: "completed", Role: "explorer", Mode: "read_only", Execution: "wait"},
 		Budget: &agentDownBudget{
 			TokenLimit: uint64(setup.Request.Config.WatchdogTokenBudget), TurnLimit: 4,
 			TimeoutSeconds: uint64(setup.Request.Config.WatchdogTimeoutSecond),
@@ -171,6 +171,7 @@ func TestBaselineTerminalAdoptsExactDurableSpawnIntentAfterLostReply(t *testing.
 		t.Fatal(err)
 	}
 	facts.Child.SessionID = "baseline-child-2"
+	facts.Child.AgentID = "baseline-child-2"
 	facts.Scope.Ownership = baselineAgentOwnership(failed)
 	matched, err = failed.observeAgentDown(failed.Parent, 12, nil, facts)
 	if err != nil || !matched || failed.Attempt != 2 || failed.BaselineAgentID != "baseline-child-2" || failed.Terminal == nil || failed.Terminal.InvalidReason != "" {
@@ -242,7 +243,7 @@ func TestFreshBaselineTerminalCleanupCannotEraseProposal(t *testing.T) {
 	}
 	facts := agentDownFacts{
 		Schema:   agentDownFactsSchema,
-		Child:    &agentDownChild{SessionID: "baseline-child", Status: "completed", Role: "explorer", Mode: "read_only", Execution: "wait"},
+		Child:    &agentDownChild{AgentID: "baseline-child", SessionID: "baseline-child", Status: "completed", Role: "explorer", Mode: "read_only", Execution: "wait"},
 		Budget:   &agentDownBudget{TokenLimit: uint64(setup.Request.Config.WatchdogTokenBudget), TurnLimit: 4, TimeoutSeconds: uint64(setup.Request.Config.WatchdogTimeoutSecond)},
 		Terminal: &agentDownTerminalMetadata{Usage: &terminal.Usage, UsageComplete: &complete, Cleanup: terminal.Cleanup},
 		Scope:    &agentDownScope{Ownership: currentBaselineAgentOwnership(setup)},
@@ -275,7 +276,7 @@ func TestBaselineSpawnShapeMismatchFailsPolicyButNotHostSchema(t *testing.T) {
 	terminal := agentTerminalMetadata{UsageComplete: true}
 	facts := agentDownFacts{
 		Schema:   agentDownFactsSchema,
-		Child:    &agentDownChild{SessionID: "baseline-child", Status: "completed", Role: "worker", Mode: "workspace_write", Execution: "retained"},
+		Child:    &agentDownChild{AgentID: "baseline-child", SessionID: "baseline-child", Status: "completed", Role: "worker", Mode: "workspace_write", Execution: "retained"},
 		Budget:   &agentDownBudget{TokenLimit: uint64(setup.Request.Config.WatchdogTokenBudget), TurnLimit: 4, TimeoutSeconds: uint64(setup.Request.Config.WatchdogTimeoutSecond)},
 		Terminal: &agentDownTerminalMetadata{Usage: &terminal.Usage, UsageComplete: &complete},
 		Scope:    &agentDownScope{Ownership: "other"},
@@ -299,7 +300,7 @@ func TestFailedBaselineChildCannotAuthorizeValidLookingProposal(t *testing.T) {
 	complete := true
 	facts := agentDownFacts{
 		Schema:   agentDownFactsSchema,
-		Child:    &agentDownChild{SessionID: "baseline-child", Status: "failed", Role: "explorer", Mode: "read_only", Execution: "wait"},
+		Child:    &agentDownChild{AgentID: "baseline-child", SessionID: "baseline-child", Status: "failed", Role: "explorer", Mode: "read_only", Execution: "wait"},
 		Budget:   &agentDownBudget{TokenLimit: uint64(setup.Request.Config.WatchdogTokenBudget), TurnLimit: 4, TimeoutSeconds: uint64(setup.Request.Config.WatchdogTimeoutSecond)},
 		Terminal: &agentDownTerminalMetadata{Usage: &agentTokenUsage{}, UsageComplete: &complete},
 		Scope:    &agentDownScope{Ownership: currentBaselineAgentOwnership(setup)},

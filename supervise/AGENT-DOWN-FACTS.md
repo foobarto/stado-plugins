@@ -24,6 +24,7 @@ authenticated `stado.dev/lifecycle/v1` envelope:
     "data": {
       "schema": "stado.dev/agent-down-facts/v1",
       "child": {
+        "agent_id": "fleet-control-handle",
         "session_id": "child-session",
         "status": "completed",
         "role": "explorer",
@@ -61,8 +62,9 @@ authenticated `stado.dev/lifecycle/v1` envelope:
 }
 ```
 
-`child`, `budget`, `terminal`, `terminal.usage`, `terminal.usage_complete`, and
-`scope` are required. Optional token counters default to zero. Optional path
+`child`, `child.agent_id`, `child.session_id`, `budget`, `terminal`,
+`terminal.usage`, `terminal.usage_complete`, and `scope` are required. Optional
+token counters default to zero. Optional path
 sets carry at most 64 entries, violation sets at most 32, and every digest or
 fingerprint is a lowercase `sha256:` value. `changes` may additionally carry
 `changed_paths`, `changed_paths_digest`, and `changed_paths_truncated`;
@@ -74,9 +76,11 @@ not host facts.
 The envelope evidence references must be unique immutable tree or trace
 coordinates for the exact terminal child. Change facts require the child tree
 reference. Supervise records every bounded terminal observation, but it binds
-one to policy only when the child ID exactly matches the pending reviewer or
-verifier, or the exact review ID/ownership of a durably claimed operator input.
-For that child it also compares the reported role, mode, execution, ownership,
+one to policy only when the agent control handle exactly matches the pending
+reviewer or verifier, or the exact review ID/ownership of a durably claimed
+operator input.
+The distinct child session ID binds immutable tree/trace evidence. For that
+child it also compares the reported role, mode, execution, ownership,
 admitted budget, and empty write scope with the signed spawn request.
 A mismatch, scope violation, or changed path makes the semantic result invalid;
 this conclusion is plugin policy and is never added to the host fact shape.

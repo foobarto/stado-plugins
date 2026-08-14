@@ -71,7 +71,7 @@ func TestBaselineTerminalAndReadyCrashRemainReplayable(t *testing.T) {
 	complete := true
 	facts := agentDownFacts{
 		Schema:   agentDownFactsSchema,
-		Child:    &agentDownChild{SessionID: "baseline-child", Status: "completed", Role: "explorer", Mode: "read_only", Execution: "wait"},
+		Child:    &agentDownChild{AgentID: "baseline-child", SessionID: "baseline-child", Status: "completed", Role: "explorer", Mode: "read_only", Execution: "wait"},
 		Budget:   &agentDownBudget{TokenLimit: uint64(setup.Request.Config.WatchdogTokenBudget), TurnLimit: 4, TimeoutSeconds: uint64(setup.Request.Config.WatchdogTimeoutSecond)},
 		Terminal: &agentDownTerminalMetadata{Usage: &agentTokenUsage{}, UsageComplete: &complete},
 		Scope:    &agentDownScope{Ownership: currentBaselineAgentOwnership(setup)},

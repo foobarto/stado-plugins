@@ -10,6 +10,11 @@ lifecycle authority is `lifecycle:contribute:pre_llm`: it can append bounded
 advisory context but cannot deny a turn, replace the model or system prompt, or
 mutate conversation history.
 
+The generic session snapshot contains active signal, retained-child, and
+unread-message facts. It deliberately does not expose another application's
+learn/review journal, so this package never claims that a signal was reviewed
+or suppresses advice from application-private completion state.
+
 The v1 host surface is the interactive TUI only. Installation is not automatic;
 the package must be installed through the normal signed-plugin trust flow and
 explicitly listed as a background plugin.

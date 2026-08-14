@@ -90,14 +90,6 @@ type contextSignal struct {
 	ExpiresAt        time.Time `json:"expires_at"`
 }
 
-type contextReview struct {
-	ID        string    `json:"id"`
-	Status    string    `json:"status"`
-	AsOf      uint64    `json:"as_of_sequence"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-}
-
 type contextChild struct {
 	ID         string `json:"id"`
 	Status     string `json:"status"`
@@ -110,8 +102,6 @@ type sessionContext struct {
 	Digest            string          `json:"digest"`
 	Signals           []contextSignal `json:"signals"`
 	SignalsTruncated  bool            `json:"signals_truncated"`
-	Reviews           []contextReview `json:"reviews"`
-	ReviewsTruncated  bool            `json:"reviews_truncated"`
 	Children          []contextChild  `json:"children"`
 	ChildrenTruncated bool            `json:"children_truncated"`
 	UnreadMessages    int             `json:"unread_messages"`
@@ -152,17 +142,9 @@ func buildGuidance(facts qualityFacts, snapshot sessionContext, available map[st
 }
 
 func learningGuidance(snapshot sessionContext) string {
-	var reviewedThrough uint64
-	for _, review := range snapshot.Reviews {
-		if review.Status == "completed" && review.AsOf > reviewedThrough {
-			reviewedThrough = review.AsOf
-		}
-	}
 	types := make(map[string]bool)
 	for _, signal := range snapshot.Signals {
-		if signal.DetectedSequence > reviewedThrough {
-			types[signal.Type] = true
-		}
+		types[signal.Type] = true
 	}
 	if len(types) == 0 {
 		return ""
@@ -175,7 +157,7 @@ func learningGuidance(snapshot sessionContext) string {
 	if len(labels) > 3 {
 		labels = labels[:3]
 	}
-	return fmt.Sprintf("%d unreviewed mechanical learning signal shape(s) are active (%s). Preserve reusable corrections as candidate lessons and ask the operator to run `/learn [focus]` at the natural response boundary. Candidates remain pending review; never run or claim approval.", len(types), strings.Join(labels, ", "))
+	return fmt.Sprintf("%d mechanical learning signal shape(s) are active (%s). Preserve reusable corrections as candidate lessons and ask the operator to run `/learn [focus]` at the natural response boundary. Candidates remain pending review; never run or claim approval.", len(types), strings.Join(labels, ", "))
 }
 
 func coordinationGuidance(snapshot sessionContext, available map[string]bool) string {

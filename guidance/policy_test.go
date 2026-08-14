@@ -1,35 +1,62 @@
 package main
 
 import (
+	"bytes"
+	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	"io"
+	"os"
 	"strings"
 	"testing"
 	"time"
 )
 
-func TestGuidancePolicyOwnsThresholdsWordingAndSuppression(t *testing.T) {
+func TestSessionContextFactsFixtureMatchesConsumerSchema(t *testing.T) {
+	raw, err := os.ReadFile("testdata/session-context-facts-v1.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	decoder := json.NewDecoder(bytes.NewReader(raw))
+	decoder.DisallowUnknownFields()
+	var snapshot sessionContext
+	if err := decoder.Decode(&snapshot); err != nil {
+		t.Fatal(err)
+	}
+	if err := decoder.Decode(&struct{}{}); err != io.EOF {
+		t.Fatalf("fixture has trailing JSON: %v", err)
+	}
+	if snapshot.Schema != "stado.dev/session-context-facts/v1" || snapshot.AsOfSequence != 42 || len(snapshot.Signals) != 1 || len(snapshot.Children) != 1 || snapshot.UnreadMessages != 1 {
+		t.Fatalf("fixture=%+v", snapshot)
+	}
+	wantDigest := snapshot.Digest
+	snapshot.Digest = ""
+	encoded, err := json.Marshal(snapshot)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := fmt.Sprintf("%x", sha256.Sum256(encoded)); got != wantDigest {
+		t.Fatalf("fixture digest=%s, recomputed=%s", wantDigest, got)
+	}
+}
+
+func TestGuidancePolicyOwnsThresholdsWordingAndOrdering(t *testing.T) {
 	facts := qualityFacts{}
 	facts.CurrentInput.Text = "what did we decide in the previous session?"
 	snapshot := sessionContext{
 		Signals:        []contextSignal{{Type: "repeated_tool_failure", DetectedSequence: 5}},
-		Reviews:        []contextReview{{Status: "completed", AsOf: 4}},
 		Children:       []contextChild{{ID: "child", Status: "running"}},
 		UnreadMessages: 1,
 	}
 	available := map[string]bool{"session__research": true, "agent__list": true, "agent__read_messages": true, "agent__send_message": true}
 	got := buildGuidance(facts, snapshot, available)
-	for _, want := range []string{"unreviewed mechanical", "Retained coordination", "`session__research`"} {
+	for _, want := range []string{"mechanical learning", "Retained coordination", "`session__research`"} {
 		if !strings.Contains(got, want) {
 			t.Fatalf("guidance missing %q: %s", want, got)
 		}
 	}
 	if len(got) > maxGuidanceBytes {
 		t.Fatalf("guidance exceeded bound: %d", len(got))
-	}
-	snapshot.Reviews[0].AsOf = 5
-	if reviewed := buildGuidance(facts, snapshot, available); strings.Contains(reviewed, "unreviewed mechanical") {
-		t.Fatalf("completed review boundary did not suppress signal: %s", reviewed)
 	}
 }
 

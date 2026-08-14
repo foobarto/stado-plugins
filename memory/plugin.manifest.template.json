@@ -1,0 +1,79 @@
+{
+  "name": "memory",
+  "version": "0.1.0-dev.20260814",
+  "author": "foobarto (development build; unsigned)",
+  "author_pubkey_fpr": "",
+  "wasm_sha256": "",
+  "capabilities": [
+    "artifact:migrate:legacy-memory-v1",
+    "artifact:propose:memory",
+    "artifact:propose:lesson",
+    "artifact:read:self#memory",
+    "artifact:read:self#lesson",
+    "session:journal:append",
+    "session:projection:read",
+    "evidence:catalog:session",
+    "evidence:open:session",
+    "provider:invoke:12000",
+    "lifecycle:observe:pre_llm",
+    "lifecycle:contribute:pre_llm"
+  ],
+  "tools": [
+    {
+      "name": "memory",
+      "description": "List visible plugin-owned memory/lesson artifacts or propose a candidate memory. This tool cannot activate candidates.",
+      "class": "StateMutating",
+      "application_session": {"plan_visible": false},
+      "schema": "{\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"type\":\"object\",\"additionalProperties\":false,\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list\",\"propose\"]},\"idempotency_key\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":64,\"pattern\":\"^[A-Za-z0-9._:-]+$\"},\"scope\":{\"type\":\"string\",\"enum\":[\"session\",\"repo\",\"global\"]},\"summary\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":512},\"content\":{\"type\":\"string\",\"maxLength\":16384},\"trigger\":{\"type\":\"string\",\"maxLength\":1024},\"active_only\":{\"type\":\"boolean\"}},\"allOf\":[{\"if\":{\"properties\":{\"action\":{\"const\":\"propose\"}},\"required\":[\"action\"]},\"then\":{\"required\":[\"idempotency_key\",\"summary\"]}}]}"
+    },
+    {
+      "name": "learn",
+      "description": "Review bounded authenticated session evidence through the configured provider and propose candidate lessons only. Activation requires a separate trusted presenter.",
+      "class": "StateMutating",
+      "application_session": {"plan_visible": false},
+      "schema": "{\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"type\":\"object\",\"additionalProperties\":false,\"required\":[\"action\"],\"properties\":{\"action\":{\"const\":\"review\"},\"focus\":{\"type\":\"string\",\"maxLength\":4096}}}"
+    }
+  ],
+  "commands": [
+    {
+      "name": "memory",
+      "description": "Inspect candidate/active memory artifacts or control this session's signed pre-LLM contribution policy.",
+      "usage": "/memory [status|on|off|list|add --key <key> <summary>]",
+      "timeout_ms": 30000
+    },
+    {
+      "name": "learn",
+      "description": "Review bounded current-session evidence and create candidate lessons; this does not approve or activate them.",
+      "usage": "/learn [review]",
+      "timeout_ms": 300000
+    }
+  ],
+  "artifact_kinds": [
+    {
+      "name": "memory",
+      "schema": "{\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"type\":\"object\",\"additionalProperties\":false,\"required\":[\"summary\"],\"properties\":{\"summary\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":512},\"content\":{\"type\":\"string\",\"maxLength\":16384},\"trigger\":{\"type\":\"string\",\"maxLength\":1024}}}",
+      "index": [
+        {"pointer": "/summary", "role": "title"},
+        {"pointer": "/content", "role": "text"},
+        {"pointer": "/trigger", "role": "trigger"}
+      ]
+    },
+    {
+      "name": "lesson",
+      "schema": "{\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"type\":\"object\",\"additionalProperties\":false,\"required\":[\"summary\",\"trigger\"],\"properties\":{\"summary\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":512},\"content\":{\"type\":\"string\",\"maxLength\":16384},\"trigger\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":1024},\"expected_outcome\":{\"type\":\"string\",\"maxLength\":16384}}}",
+      "index": [
+        {"pointer": "/summary", "role": "title"},
+        {"pointer": "/content", "role": "text"},
+        {"pointer": "/trigger", "role": "trigger"}
+      ]
+    }
+  ],
+  "lifecycle": {
+    "points": ["pre_llm"],
+    "failure": "open",
+    "timeout_ms": 5000
+  },
+  "min_stado_version": "0.80.0",
+  "timestamp_utc": "2026-08-14T00:00:00Z",
+  "nonce": "memory-development-unpublished-20260814"
+}

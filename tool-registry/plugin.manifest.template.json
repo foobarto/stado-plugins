@@ -1,0 +1,85 @@
+{
+  "name": "tool-registry",
+  "version": "0.1.0-dev.20260814",
+  "author": "foobarto (development build; unsigned)",
+  "author_pubkey_fpr": "",
+  "wasm_sha256": "",
+  "capabilities": ["registry:catalog", "session:tool-surface"],
+  "tools": [
+    {
+      "name": "tools__search",
+      "export": "search",
+      "description": "Search the current loader-bound tool catalog by exact name facts, description, source namespace, or category.",
+      "class": "NonMutating",
+      "capabilities": ["registry:catalog"],
+      "categories": ["meta"],
+      "schema": "{\"type\":\"object\",\"additionalProperties\":false,\"properties\":{\"query\":{\"type\":\"string\"},\"limit\":{\"type\":\"integer\",\"minimum\":1,\"maximum\":500}}}"
+    },
+    {
+      "name": "tools__describe",
+      "export": "describe",
+      "description": "Return exact loader-bound contract facts for named tools and atomically activate the found tools in this session.",
+      "class": "StateMutating",
+      "capabilities": ["registry:catalog", "session:tool-surface"],
+      "categories": ["meta"],
+      "schema": "{\"type\":\"object\",\"additionalProperties\":false,\"properties\":{\"name\":{\"type\":\"string\"},\"names\":{\"type\":\"array\",\"maxItems\":4096,\"items\":{\"type\":\"string\"}}}}"
+    },
+    {
+      "name": "tools__categories",
+      "export": "categories",
+      "description": "List canonical categories declared by tools in the current authenticated catalog.",
+      "class": "NonMutating",
+      "capabilities": ["registry:catalog"],
+      "categories": ["meta"],
+      "schema": "{\"type\":\"object\",\"additionalProperties\":false,\"properties\":{\"query\":{\"type\":\"string\"}}}"
+    },
+    {
+      "name": "tools__in_category",
+      "export": "in_category",
+      "description": "List catalog tools with an exact canonical or extra category value.",
+      "class": "NonMutating",
+      "capabilities": ["registry:catalog"],
+      "categories": ["meta"],
+      "schema": "{\"type\":\"object\",\"additionalProperties\":false,\"required\":[\"name\"],\"properties\":{\"name\":{\"type\":\"string\"}}}"
+    },
+    {
+      "name": "tools__activate",
+      "export": "activate",
+      "description": "Atomically add exact catalog tool names to this session's per-turn surface.",
+      "class": "StateMutating",
+      "capabilities": ["registry:catalog", "session:tool-surface"],
+      "categories": ["meta"],
+      "schema": "{\"type\":\"object\",\"additionalProperties\":false,\"properties\":{\"name\":{\"type\":\"string\"},\"names\":{\"type\":\"array\",\"maxItems\":4096,\"items\":{\"type\":\"string\"}}}}"
+    },
+    {
+      "name": "tools__deactivate",
+      "export": "deactivate",
+      "description": "Atomically remove exact catalog tool names from this session's per-turn surface without changing the operator ceiling.",
+      "class": "StateMutating",
+      "capabilities": ["registry:catalog", "session:tool-surface"],
+      "categories": ["meta"],
+      "schema": "{\"type\":\"object\",\"additionalProperties\":false,\"properties\":{\"name\":{\"type\":\"string\"},\"names\":{\"type\":\"array\",\"maxItems\":4096,\"items\":{\"type\":\"string\"}}}}"
+    },
+    {
+      "name": "plugin__load",
+      "export": "plugin_load",
+      "description": "Atomically activate every catalog tool owned by one exact authenticated source namespace.",
+      "class": "StateMutating",
+      "capabilities": ["registry:catalog", "session:tool-surface"],
+      "categories": ["meta"],
+      "schema": "{\"type\":\"object\",\"additionalProperties\":false,\"required\":[\"plugin\"],\"properties\":{\"plugin\":{\"type\":\"string\",\"description\":\"Exact source_namespace from tools.search or tools.describe.\"}}}"
+    },
+    {
+      "name": "plugin__unload",
+      "export": "plugin_unload",
+      "description": "Atomically deactivate every catalog tool owned by one exact authenticated source namespace.",
+      "class": "StateMutating",
+      "capabilities": ["registry:catalog", "session:tool-surface"],
+      "categories": ["meta"],
+      "schema": "{\"type\":\"object\",\"additionalProperties\":false,\"required\":[\"plugin\"],\"properties\":{\"plugin\":{\"type\":\"string\",\"description\":\"Exact source_namespace from tools.search or tools.describe.\"}}}"
+    }
+  ],
+  "min_stado_version": "0.80.0",
+  "timestamp_utc": "2026-08-14T00:00:00Z",
+  "nonce": "tool-registry-development-unpublished-20260814"
+}

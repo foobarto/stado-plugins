@@ -1,0 +1,92 @@
+{
+  "name": "research",
+  "version": "0.1.0-dev.20260814",
+  "author": "foobarto (development build; unsigned)",
+  "author_pubkey_fpr": "",
+  "wasm_sha256": "",
+  "capabilities": [
+    "agent:spawn",
+    "evidence:validate",
+    "evidence:catalog:artifact",
+    "evidence:search:artifact",
+    "evidence:open:artifact",
+    "evidence:catalog:session",
+    "evidence:search:session",
+    "evidence:open:session"
+  ],
+  "tools": [
+    {
+      "name": "memory__research",
+      "export": "memory_research",
+      "description": "Delegate a bounded, isolated evidence review over active authorized artifacts and return mechanically checked citations.",
+      "class": "StateMutating",
+      "capabilities": ["agent:spawn", "evidence:validate"],
+      "schema": "{\"type\":\"object\",\"additionalProperties\":false,\"required\":[\"query\"],\"properties\":{\"query\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":4096}}}"
+    },
+    {
+      "name": "session__research",
+      "export": "session_research",
+      "description": "Delegate a bounded, isolated evidence review over the authenticated current-session lineage and return mechanically checked citations.",
+      "class": "StateMutating",
+      "capabilities": ["agent:spawn", "evidence:validate"],
+      "schema": "{\"type\":\"object\",\"additionalProperties\":false,\"required\":[\"query\"],\"properties\":{\"query\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":4096}}}"
+    },
+    {
+      "name": "research__artifact_catalog",
+      "export": "artifact_catalog",
+      "description": "List bounded authenticated artifact evidence references available to this research child.",
+      "class": "NonMutating",
+      "capabilities": ["evidence:catalog:artifact"],
+      "agent_child_only": true,
+      "schema": "{\"type\":\"object\",\"additionalProperties\":false,\"properties\":{\"limit\":{\"type\":\"integer\",\"minimum\":1,\"maximum\":100}}}"
+    },
+    {
+      "name": "research__artifact_search",
+      "export": "artifact_search",
+      "description": "Search bounded authenticated artifact summaries and return exact references for later opening.",
+      "class": "NonMutating",
+      "capabilities": ["evidence:search:artifact"],
+      "agent_child_only": true,
+      "schema": "{\"type\":\"object\",\"additionalProperties\":false,\"required\":[\"query\"],\"properties\":{\"query\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":4096},\"limit\":{\"type\":\"integer\",\"minimum\":1,\"maximum\":100}}}"
+    },
+    {
+      "name": "research__artifact_open",
+      "export": "artifact_open",
+      "description": "Open one exact authenticated artifact evidence reference and create a durable citation receipt.",
+      "class": "NonMutating",
+      "capabilities": ["evidence:open:artifact"],
+      "agent_child_only": true,
+      "schema": "{\"type\":\"object\",\"additionalProperties\":false,\"required\":[\"ref\"],\"properties\":{\"ref\":{\"$ref\":\"#/$defs/ref\"}},\"$defs\":{\"ref\":{\"type\":\"object\",\"additionalProperties\":false,\"required\":[\"corpus\",\"kind\",\"id\",\"locator\",\"digest\"],\"properties\":{\"corpus\":{\"const\":\"artifact\"},\"kind\":{\"type\":\"string\",\"minLength\":1},\"id\":{\"type\":\"string\",\"minLength\":1},\"version\":{\"type\":\"integer\",\"minimum\":1},\"locator\":{\"type\":\"string\",\"minLength\":1},\"digest\":{\"type\":\"string\",\"minLength\":1}}}}}"
+    },
+    {
+      "name": "research__session_catalog",
+      "export": "session_catalog",
+      "description": "List bounded immutable conversation ranges in the authenticated current-session lineage.",
+      "class": "NonMutating",
+      "capabilities": ["evidence:catalog:session"],
+      "agent_child_only": true,
+      "schema": "{\"type\":\"object\",\"additionalProperties\":false,\"properties\":{\"limit\":{\"type\":\"integer\",\"minimum\":1,\"maximum\":100}}}"
+    },
+    {
+      "name": "research__session_search",
+      "export": "session_search",
+      "description": "Search bounded immutable conversation ranges in the authenticated current-session lineage.",
+      "class": "NonMutating",
+      "capabilities": ["evidence:search:session"],
+      "agent_child_only": true,
+      "schema": "{\"type\":\"object\",\"additionalProperties\":false,\"required\":[\"query\"],\"properties\":{\"query\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":4096},\"limit\":{\"type\":\"integer\",\"minimum\":1,\"maximum\":100}}}"
+    },
+    {
+      "name": "research__session_open",
+      "export": "session_open",
+      "description": "Open one exact immutable conversation range and create a durable citation receipt.",
+      "class": "NonMutating",
+      "capabilities": ["evidence:open:session"],
+      "agent_child_only": true,
+      "schema": "{\"type\":\"object\",\"additionalProperties\":false,\"required\":[\"ref\"],\"properties\":{\"ref\":{\"$ref\":\"#/$defs/ref\"}},\"$defs\":{\"ref\":{\"type\":\"object\",\"additionalProperties\":false,\"required\":[\"corpus\",\"kind\",\"id\",\"locator\",\"digest\"],\"properties\":{\"corpus\":{\"const\":\"session\"},\"kind\":{\"type\":\"string\",\"minLength\":1},\"id\":{\"type\":\"string\",\"minLength\":1},\"locator\":{\"type\":\"string\",\"minLength\":1},\"digest\":{\"type\":\"string\",\"minLength\":1}}}}}"
+    }
+  ],
+  "min_stado_version": "0.80.0",
+  "timestamp_utc": "2026-08-14T00:00:00Z",
+  "nonce": "research-development-unpublished-20260814"
+}

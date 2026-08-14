@@ -10,6 +10,7 @@
   "tools": [
     {
       "name": "approval_demo",
+      "capabilities": ["ui:approval"],
       "description": "Manual test tool only. Do not use unless a human explicitly asks to test plugin approval UI.",
       "class": "NonMutating",
       "schema": "{\"type\":\"object\",\"properties\":{\"title\":{\"type\":\"string\"},\"body\":{\"type\":\"string\"}}}"

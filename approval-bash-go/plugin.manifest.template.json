@@ -11,6 +11,7 @@
   "tools": [
     {
       "name": "bash",
+      "capabilities": ["ui:approval", "exec:shallow_bash"],
       "description": "Run bash, but require explicit UI approval before command execution.",
       "class": "Exec",
       "schema": "{\"type\":\"object\",\"properties\":{\"command\":{\"type\":\"string\",\"description\":\"Shell command to execute\"}},\"required\":[\"command\"]}"

@@ -1,0 +1,23 @@
+{
+  "name": "guidance",
+  "version": "0.1.0-dev.20260814",
+  "author": "foobarto",
+  "author_pubkey_fpr": "",
+  "wasm_sha256": "",
+  "capabilities": [
+    "session:context:read",
+    "registry:catalog",
+    "lifecycle:observe:pre_llm",
+    "lifecycle:contribute:pre_llm"
+  ],
+  "tools": [],
+  "commands": [],
+  "lifecycle": {
+    "points": ["pre_llm"],
+    "failure": "open",
+    "timeout_ms": 5000
+  },
+  "min_stado_version": "0.80.0",
+  "timestamp_utc": "2026-08-14T00:00:00Z",
+  "nonce": "guidance-dev-20260814-001"
+}

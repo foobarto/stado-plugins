@@ -12,6 +12,7 @@
   "tools": [
     {
       "name": "inspect",
+      "capabilities": ["session:read", "session:fork", "llm:invoke:20000"],
       "description": "Report the current session's shape — id, message count, token count, last turn ref, and a head of the history payload. Demonstrates the Phase 7.1b session:read host import end-to-end.",
       "schema": "{\"type\":\"object\",\"properties\":{}}"
     }

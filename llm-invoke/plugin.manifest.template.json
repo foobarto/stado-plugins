@@ -1,0 +1,23 @@
+{
+  "name": "llm-invoke",
+  "version": "0.1.0-dev.20260814",
+  "author": "foobarto",
+  "author_pubkey_fpr": "",
+  "wasm_sha256": "",
+  "capabilities": [
+    "provider:invoke:16384"
+  ],
+  "tools": [
+    {
+      "name": "llm__invoke",
+      "capabilities": ["provider:invoke:16384"],
+      "export": "invoke",
+      "description": "Run one bounded completion through the operator-configured provider. The signed plugin shapes the request and output; native stado supplies only provider construction, token enforcement, and facts.",
+      "class": "StateMutating",
+      "schema": "{\"type\":\"object\",\"additionalProperties\":false,\"required\":[\"prompt\"],\"properties\":{\"prompt\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":262144},\"system\":{\"type\":\"string\",\"maxLength\":262144},\"model\":{\"type\":\"string\",\"maxLength\":512},\"max_tokens\":{\"type\":\"integer\",\"minimum\":0,\"maximum\":16384},\"temperature\":{\"type\":\"number\",\"minimum\":0,\"maximum\":2}}}"
+    }
+  ],
+  "min_stado_version": "0.80.0",
+  "timestamp_utc": "2026-08-14T00:00:00Z",
+  "nonce": "llm-invoke-dev-20260814-001"
+}

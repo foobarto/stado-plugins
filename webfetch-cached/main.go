@@ -1,4 +1,4 @@
-// webfetch-cached — wraps the bundled stado_http_get host import
+// webfetch-cached — wraps the stado_http_request host import
 // with a SHA-256-keyed disk cache. Same {url} input as the bundled
 // webfetch tool, but a cache hit on the same URL returns immediately
 // instead of re-fetching.
@@ -10,8 +10,8 @@
 // workflows a persistent cache the operator controls.
 //
 // Authoring lineage: this is the canonical example of three things
-// the v0.26.0 plugin surface enables — wrapping a bundled-tool host
-// import (`stado_http_get`, gated behind `--with-tool-host`),
+// the plugin surface enables — wrapping the generic HTTP host import
+// (`stado_http_request`, gated by `net:http_request`),
 // declaring a workdir-rooted fs capability (`fs:read:.cache/...`,
 // gated behind `--workdir`), and using `[tools].overrides` to
 // transparently replace the bundled `webfetch` tool with this one.
@@ -32,8 +32,10 @@ package main
 
 import (
 	"crypto/sha256"
+	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
+	"strconv"
 	"strings"
 	"sync"
 	"unsafe"
@@ -50,8 +52,8 @@ func stadoFsRead(pathPtr, pathLen, bufPtr, bufCap uint32) int32
 //go:wasmimport stado stado_fs_write
 func stadoFsWrite(pathPtr, pathLen, bufPtr, bufLen uint32) int32
 
-//go:wasmimport stado stado_http_get
-func stadoHttpGet(argsPtr, argsLen, resultPtr, resultCap uint32) int32
+//go:wasmimport stado stado_http_request
+func stadoHttpRequest(argsPtr, argsLen, resultPtr, resultCap uint32) int32
 
 func logInfo(msg string) {
 	level := []byte("info")
@@ -85,6 +87,22 @@ const cacheDir = ".cache/stado-webfetch"
 
 type fetchArgs struct {
 	URL string `json:"url"`
+}
+
+type hostHTTPRequest struct {
+	Method    string            `json:"method"`
+	URL       string            `json:"url"`
+	Headers   map[string]string `json:"headers,omitempty"`
+	BodyB64   string            `json:"body_b64,omitempty"`
+	TimeoutMs int               `json:"timeout_ms,omitempty"`
+	ProxyURL  string            `json:"proxy_url,omitempty"`
+}
+
+type hostHTTPResponse struct {
+	Status        int               `json:"status"`
+	Headers       map[string]string `json:"headers"`
+	BodyB64       string            `json:"body_b64"`
+	BodyTruncated bool              `json:"body_truncated"`
 }
 
 type cacheEntry struct {
@@ -142,17 +160,33 @@ func stadoToolWebfetch(argsPtr, argsLen, resultPtr, resultCap int32) int32 {
 	logInfo("cache miss: " + key[:12] + " — fetching")
 	const httpBufCap = 1 << 22
 	httpBuf := make([]byte, httpBufCap)
-	httpArgs, _ := json.Marshal(fetchArgs{URL: a.URL})
-	hn := stadoHttpGet(
+	httpArgs, _ := json.Marshal(hostHTTPRequest{
+		Method:    "GET",
+		URL:       a.URL,
+		TimeoutMs: 30000,
+	})
+	hn := stadoHttpRequest(
 		uint32(uintptr(unsafe.Pointer(&httpArgs[0]))), uint32(len(httpArgs)),
 		uint32(uintptr(unsafe.Pointer(&httpBuf[0]))), uint32(httpBufCap),
 	)
 	if hn < 0 {
-		return writeJSON(resultPtr, resultCap, fetchError{
-			Error: "stado_http_get returned -1; ensure plugin manifest declares net:http_get and --with-tool-host is passed (EP-0028)",
-		})
+		return writeJSON(resultPtr, resultCap, fetchError{Error: "stado_http_request: " + string(httpBuf[:-hn])})
 	}
-	body := string(httpBuf[:hn])
+	var resp hostHTTPResponse
+	if err := json.Unmarshal(httpBuf[:hn], &resp); err != nil {
+		return writeJSON(resultPtr, resultCap, fetchError{Error: "decode stado_http_request response: " + err.Error()})
+	}
+	if resp.BodyTruncated {
+		return writeJSON(resultPtr, resultCap, fetchError{Error: "HTTP response body was truncated; refusing to cache partial content"})
+	}
+	if resp.Status < 200 || resp.Status >= 300 {
+		return writeJSON(resultPtr, resultCap, fetchError{Error: "HTTP request failed with status " + strconv.Itoa(resp.Status)})
+	}
+	bodyBytes, err := base64.StdEncoding.DecodeString(resp.BodyB64)
+	if err != nil {
+		return writeJSON(resultPtr, resultCap, fetchError{Error: "decode HTTP body_b64: " + err.Error()})
+	}
+	body := string(bodyBytes)
 
 	ent := cacheEntry{URL: a.URL, Body: body}
 	entBytes, err := json.Marshal(ent)

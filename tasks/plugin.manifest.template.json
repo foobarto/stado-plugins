@@ -1,0 +1,50 @@
+{
+  "name": "tasks",
+  "version": "0.1.0-dev.20260814",
+  "author": "foobarto (development build; unsigned)",
+  "author_pubkey_fpr": "",
+  "wasm_sha256": "",
+  "capabilities": [
+    "artifact:propose:task",
+    "artifact:read:self#task",
+    "artifact:edit:task",
+    "ui:choice",
+    "cfg:state_dir",
+    "fs:read:cfg:state_dir/tasks",
+    "fs:write:cfg:state_dir/tasks"
+  ],
+  "tools": [
+    {
+      "name": "tasks",
+      "description": "Create, list, read, update, or logically delete persistent global tasks owned by the admitted tasks lifecycle application.",
+      "class": "StateMutating",
+      "application_session": {"plan_visible": false},
+      "schema": "{\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"type\":\"object\",\"additionalProperties\":false,\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"create\",\"list\",\"read\",\"update\",\"edit\",\"delete\"]},\"idempotency_key\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":64,\"pattern\":\"^[A-Za-z0-9._:-]+$\",\"description\":\"Required for create; reuse the same key when retrying the same logical create.\"},\"id\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":256},\"title\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":256},\"body\":{\"type\":\"string\",\"maxLength\":16384},\"status\":{\"type\":\"string\",\"enum\":[\"open\",\"in_progress\",\"done\"]},\"limit\":{\"type\":\"integer\",\"minimum\":1,\"maximum\":50}},\"allOf\":[{\"if\":{\"properties\":{\"action\":{\"const\":\"create\"}},\"required\":[\"action\"]},\"then\":{\"required\":[\"idempotency_key\"]}}]}"
+    }
+  ],
+  "commands": [
+    {
+      "name": "tasks",
+      "description": "Open the task manager or perform a direct task operation.",
+      "usage": "/tasks [list | add --key <idempotency-key> <title> | read <id> | delete <id>]",
+      "timeout_ms": 900000
+    }
+  ],
+  "artifact_kinds": [
+    {
+      "name": "task",
+      "schema": "{\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"type\":\"object\",\"additionalProperties\":false,\"required\":[\"title\",\"status\",\"deleted\"],\"properties\":{\"title\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":256},\"body\":{\"type\":\"string\",\"maxLength\":16384},\"status\":{\"type\":\"string\",\"enum\":[\"open\",\"in_progress\",\"done\"]},\"deleted\":{\"type\":\"boolean\"},\"legacy_id\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":128},\"legacy_created_at\":{\"type\":\"string\",\"maxLength\":64},\"legacy_updated_at\":{\"type\":\"string\",\"maxLength\":64}}}",
+      "index": [
+        {"pointer": "/title", "role": "title"},
+        {"pointer": "/body", "role": "text"},
+        {"pointer": "/status", "role": "trigger"}
+      ]
+    }
+  ],
+  "lifecycle": {
+    "failure": "closed"
+  },
+  "min_stado_version": "0.80.0",
+  "timestamp_utc": "2026-08-14T00:00:00Z",
+  "nonce": "tasks-development-unpublished-20260814"
+}

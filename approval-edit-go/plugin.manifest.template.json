@@ -12,6 +12,7 @@
   "tools": [
     {
       "name": "edit",
+      "capabilities": ["ui:approval", "fs:read:.", "fs:write:."],
       "description": "Apply a text edit, but require explicit UI approval before the host wrapper runs.",
       "class": "Mutating",
       "schema": "{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\",\"description\":\"Path to the file\"},\"old\":{\"type\":\"string\",\"description\":\"Text to find (exact match)\"},\"new\":{\"type\":\"string\",\"description\":\"Replacement text\"}},\"required\":[\"path\",\"old\",\"new\"]}"

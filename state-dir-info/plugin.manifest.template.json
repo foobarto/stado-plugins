@@ -10,6 +10,7 @@
   "tools": [
     {
       "name": "state_dir",
+      "capabilities": ["cfg:state_dir"],
       "description": "Return the operator's stado state-dir path as resolved by stado_cfg_state_dir. Demonstration plugin for the EP-0029 cfg:* capability vocabulary — copy as a starting point for plugins that need to compose paths under stado's state directory.",
       "schema": "{\"type\":\"object\",\"properties\":{},\"description\":\"No arguments — the plugin returns one field: state_dir.\"}"
     }

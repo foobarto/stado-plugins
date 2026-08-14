@@ -8,6 +8,7 @@
   "tools": [
     {
       "name": "greet",
+      "capabilities": [],
       "description": "Greet someone by name — Go implementation. Reads { \"name\": \"...\" } and returns { \"message\": \"Hello, <name>!\" }.",
       "schema": "{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\",\"description\":\"Name to greet\"}}}"
     }

@@ -11,6 +11,7 @@
   "tools": [
     {
       "name": "write",
+      "capabilities": ["ui:approval", "fs:write:."],
       "description": "Write a file, but require explicit UI approval before the host wrapper runs.",
       "class": "Mutating",
       "schema": "{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\",\"description\":\"Path to the file\"},\"content\":{\"type\":\"string\",\"description\":\"Content to write\"}},\"required\":[\"path\",\"content\"]}"

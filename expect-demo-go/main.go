@@ -1,7 +1,7 @@
-// expect-demo-go — minimal example of the stado_terminal_expect
+// expect-demo-go — minimal example of the stado_pty_expect
 // primitive. One tool, no args: spawns a shell that prints a prompt,
 // waits for input, echoes a marker, then exits. The demo drives that
-// session via expect → write → expect → close, returning a summary of
+// session via expect → write → expect → destroy, returning a summary of
 // what each step saw. Designed to be ~80 LOC of demo on top of the
 // usual wasm boilerplate.
 //
@@ -21,20 +21,17 @@ import (
 
 func main() {}
 
-//go:wasmimport stado stado_terminal_open
-func stadoTerminalOpen(argsPtr, argsLen, resPtr, resCap uint32) int64
+//go:wasmimport stado stado_pty_create
+func stadoPtyCreate(argsPtr, argsLen, resPtr, resCap uint32) int64
 
-//go:wasmimport stado stado_terminal_attach
-func stadoTerminalAttach(argsPtr, argsLen, resPtr, resCap uint32) int32
+//go:wasmimport stado stado_pty_write
+func stadoPtyWrite(idLo, idHi, bufPtr, bufLen, errPtr, errCap uint32) int32
 
-//go:wasmimport stado stado_terminal_write
-func stadoTerminalWrite(idLo, idHi, bufPtr, bufLen, errPtr, errCap uint32) int32
+//go:wasmimport stado stado_pty_expect
+func stadoPtyExpect(idLo, idHi, argsPtr, argsLen, resPtr, resCap uint32) int32
 
-//go:wasmimport stado stado_terminal_expect
-func stadoTerminalExpect(idLo, idHi, argsPtr, argsLen, resPtr, resCap uint32) int32
-
-//go:wasmimport stado stado_terminal_close
-func stadoTerminalClose(argsPtr, argsLen, resPtr, resCap uint32) int32
+//go:wasmimport stado stado_pty_destroy
+func stadoPtyDestroy(argsPtr, argsLen, resPtr, resCap uint32) int32
 
 var pinned sync.Map
 
@@ -81,11 +78,7 @@ func stadoToolExpectDemo(_, _, resPtr, resCap int32) int32 {
 	if err != nil {
 		return writeErr(resPtr, resCap, "spawn: "+err.Error())
 	}
-	defer closeSession(id)
-
-	if err := attachSession(id); err != nil {
-		return writeErr(resPtr, resCap, "attach: "+err.Error())
-	}
+	defer destroySession(id)
 
 	steps := []stepReport{}
 
@@ -135,21 +128,11 @@ func reportStep(name string, r expectResult) stepReport {
 func openSession(argv []string) (uint64, error) {
 	args, _ := json.Marshal(map[string]any{"argv": argv})
 	scratch := make([]byte, 4096)
-	rc := stadoTerminalOpen(ptr(args), uint32(len(args)), ptr(scratch), uint32(len(scratch)))
+	rc := stadoPtyCreate(ptr(args), uint32(len(args)), ptr(scratch), uint32(len(scratch)))
 	if rc <= 0 {
 		return 0, hostErr(scratch, int32(-rc))
 	}
 	return uint64(rc), nil
-}
-
-func attachSession(id uint64) error {
-	args, _ := json.Marshal(map[string]any{"id": id})
-	scratch := make([]byte, 4096)
-	rc := stadoTerminalAttach(ptr(args), uint32(len(args)), ptr(scratch), uint32(len(scratch)))
-	if rc < 0 {
-		return hostErr(scratch, -rc)
-	}
-	return nil
 }
 
 func writeSession(id uint64, text string) (int32, error) {
@@ -157,7 +140,7 @@ func writeSession(id uint64, text string) (int32, error) {
 	scratch := make([]byte, 1024)
 	idLo := uint32(id & 0xFFFFFFFF)
 	idHi := uint32(id >> 32)
-	rc := stadoTerminalWrite(idLo, idHi, ptr(data), uint32(len(data)), ptr(scratch), uint32(len(scratch)))
+	rc := stadoPtyWrite(idLo, idHi, ptr(data), uint32(len(data)), ptr(scratch), uint32(len(scratch)))
 	if rc < 0 {
 		return 0, hostErr(scratch, -rc)
 	}
@@ -173,7 +156,7 @@ func expectPattern(id uint64, patterns []string, regex bool, timeoutMs int) (exp
 	scratch := make([]byte, scratchCap)
 	idLo := uint32(id & 0xFFFFFFFF)
 	idHi := uint32(id >> 32)
-	rc := stadoTerminalExpect(idLo, idHi, ptr(args), uint32(len(args)), ptr(scratch), uint32(len(scratch)))
+	rc := stadoPtyExpect(idLo, idHi, ptr(args), uint32(len(args)), ptr(scratch), uint32(len(scratch)))
 	if rc < 0 {
 		return expectResult{}, hostErr(scratch, -rc)
 	}
@@ -184,10 +167,10 @@ func expectPattern(id uint64, patterns []string, regex bool, timeoutMs int) (exp
 	return res, nil
 }
 
-func closeSession(id uint64) {
+func destroySession(id uint64) {
 	args, _ := json.Marshal(map[string]any{"id": id})
 	scratch := make([]byte, 256)
-	stadoTerminalClose(ptr(args), uint32(len(args)), ptr(scratch), uint32(len(scratch)))
+	stadoPtyDestroy(ptr(args), uint32(len(args)), ptr(scratch), uint32(len(scratch)))
 }
 
 func ptr(b []byte) uint32 {

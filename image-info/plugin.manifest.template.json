@@ -10,6 +10,7 @@
   "tools": [
     {
       "name": "image_info",
+      "capabilities": ["fs:read:."],
       "description": "Read just enough of an image file to report format, dimensions, color depth, and byte size — no pixel decoding. Supports PNG, JPEG, GIF87a/89a, WebP (VP8/VP8L/VP8X), and BMP. Path is relative to the plugin's workdir (pass --workdir=$PWD on the CLI). Returns format=\"unknown\" if no magic bytes match.",
       "schema": "{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\",\"description\":\"Path to the image, relative to workdir.\"}},\"required\":[\"path\"]}"
     }

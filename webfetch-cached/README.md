@@ -1,18 +1,18 @@
 # webfetch-cached — bundled-tool wrapping example
 
-Wraps the bundled `stado_http_get` host import with a SHA-256-keyed
-disk cache. Drop-in replacement for the bundled `webfetch` tool.
+Wraps the `stado_http_request` host import with a SHA-256-keyed
+disk cache. It can replace the bundled `webfetch` tool when callers want
+the raw response body plus explicit cache metadata.
 
 ## What this example demonstrates
 
-Three v0.26.0 plugin-surface features in one ~140-line plugin:
+Three plugin-surface features in one small plugin:
 
-1. **Wrapping a bundled-tool host import.** Calls `stado_http_get`
-   from inside the wasm sandbox; when invoked via
-   `stado tool run` (or from any agent loop), the host wires the
-   bundled tool's transport through — no flag needed, the tool host
-   is always attached (the old `--with-tool-host` from EP-0028 became
-   the default under EP-0038).
+1. **Wrapping the generic HTTP host import.** Calls
+   `stado_http_request` from inside the wasm sandbox and declares the
+   corresponding `net:http_request` capability. The plugin rejects
+   non-2xx responses and truncated bodies so it never caches a partial
+   or unsuccessful response.
 
 2. **Workdir-rooted fs capabilities.** Declares `fs:read:.cache/stado-webfetch`
    and `fs:write:.cache/stado-webfetch` (relative paths, resolved
@@ -51,7 +51,7 @@ stado tool run --workdir=$PWD webfetch '{"url":"https://example.com"}'
 stado tool run --workdir=$PWD webfetch '{"url":"https://example.com"}'
 ```
 
-Output is JSON with `cache_hit: true|false` and the body. The cache
+Output is JSON with `cache_hit: true|false` and the response body. The cache
 file lands at `$PWD/.cache/stado-webfetch/<sha256>.json`.
 
 If you forget either flag, `stado plugin doctor webfetch-cached-0.1.0`
@@ -78,10 +78,6 @@ periodically belong in a different tool.
 
 - [`docs/features/plugin-authoring.md`](../../../docs/features/plugin-authoring.md)
   — first-time-author walkthrough
-- [`docs/eps/0028-plugin-run-tool-host.md`](../../../docs/eps/0028-plugin-run-tool-host.md)
-  — why `--with-tool-host` existed and what it did NOT enable (now
-  the default; the flag was removed when `plugin run` became
-  `stado tool run`)
 - [`docs/eps/0027-repo-root-discovery.md`](../../../docs/eps/0027-repo-root-discovery.md)
   — why workdir-rooted fs capabilities need `--workdir`
 - [`plugins/demos/hello-go/`](../../demos/hello-go/) — minimal Go plugin

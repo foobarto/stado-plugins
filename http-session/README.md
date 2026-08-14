@@ -11,8 +11,8 @@ stateless `stado_http_request` calls.
    layer functionality (cookie persistence, header defaulting, URL
    resolution) above the host's generic transport — the host stays
    protocol-thin, the plugin owns the session semantics. Same
-   "stado lean core" boundary that webfetch-cached crosses for
-   `stado_http_get`.
+   "stado lean core" boundary that webfetch-cached crosses for the
+   same HTTP host import.
 
 2. **Persistent state across wasm-instance freshness.** Each tool
    call gets a fresh wasm instance, so plugin globals don't survive.
@@ -118,6 +118,6 @@ new host surface area.
   — why the tool host (formerly the `--with-tool-host` flag, now the
   default) and `--workdir` are needed
 - [`plugins/optional/webfetch-cached/`](../webfetch-cached/) — same
-  disk-cache-for-state pattern, on top of `stado_http_get`
+  disk-cache-for-state pattern, on top of `stado_http_request`
 - [`CHANGELOG.md`](../../../CHANGELOG.md#v0310) — `net:http_request_private`
   for lab IPs

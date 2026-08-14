@@ -1,6 +1,6 @@
 # expect-demo-go
 
-Minimal example of the `stado_terminal_expect` host primitive — the
+Minimal example of the `stado_pty_expect` host primitive — the
 read-until-pattern PTY operation that replaces the model loop of
 `shell.read with timeout → substring-check → loop` with a single tool
 call. The bundled `shell.read_until` tool exposes the same primitive
@@ -18,7 +18,7 @@ The plugin exposes one tool, `expect_demo`. It runs (no args needed):
 5. **Expect** `"never"` (timeout 0.5 s) — drives to EOF; reports the exit code.
 
 The result lists each step's match envelope so the operator can see
-exactly what came back from `stado_terminal_expect` (matched bytes,
+exactly what came back from `stado_pty_expect` (matched bytes,
 the discriminator, exit code on EOF).
 
 ## Build, sign, install
@@ -30,6 +30,9 @@ stado plugin gen-key expect-demo-go.seed
 stado plugin trust <pubkey-hex-from-gen-key>
 stado plugin install .
 ```
+
+The manifest scopes PTY execution to `exec:pty:/bin/bash` and requires
+stado 0.80.0 or newer, where only the canonical PTY ABI names are accepted.
 
 ## Use
 
@@ -52,12 +55,12 @@ Sample output (paraphrased):
 
 ## What plugin authors learn from this
 
-- `stado_terminal_expect` returns the response JSON directly: byte
+- `stado_pty_expect` returns the response JSON directly: byte
   count on success, `-n` with the host's error string at `resPtr` on
   failure. Same negative-return convention as the rest of the PTY
   family.
 - The id rides on the i32 pair `(idLo, idHi)` — same wire shape as
-  `stado_terminal_read` / `_write` — so the result buffer pointer can
+  `stado_pty_read` / `_write` — so the result buffer pointer can
   stay i32. JSON args carry only `patterns` / `regex` / `timeout_ms`.
 - `before` and `match` are base64 because PTY output routinely includes
   ANSI escapes and other non-UTF8 sequences. Decode them with
@@ -66,6 +69,6 @@ Sample output (paraphrased):
   lower `patterns[i]` index). Use this to branch on "either a prompt
   or an error" without two separate calls.
 - For full-screen TUIs (vim, mc, htop) match against
-  `stado_terminal_snapshot` rendered text instead — `expect` operates
+  `stado_pty_snapshot` rendered text instead — `expect` operates
   on the raw byte stream, where ANSI escapes interleave with content
   and substring matches against rendered words won't find them.

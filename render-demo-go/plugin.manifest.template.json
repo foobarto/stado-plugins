@@ -10,6 +10,7 @@
   "tools": [
     {
       "name": "render_demo",
+      "capabilities": ["ui:render"],
       "description": "Manual test tool only. Do not use unless a human explicitly asks to test the plugin render UI (stado_ui_render primitive). Emits one panel cycling through every body kind (text/kv/list/code/table/diff) so the renderer can be eyeballed end-to-end.",
       "class": "NonMutating",
       "schema": "{\"type\":\"object\",\"properties\":{\"variant\":{\"type\":\"string\",\"enum\":[\"info\",\"ok\",\"warn\",\"error\",\"recommendation\"]}}}"

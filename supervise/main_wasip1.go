@@ -479,20 +479,20 @@ func stadoPluginCommand(inputPointer, inputLength, resultPointer, resultCapacity
 
 	var envelope applicationCommandEnvelope
 	if err := decodeStrict(wasmBytes(inputPointer, inputLength), &envelope); err != nil {
-		return writeError(resultPointer, resultCapacity, "supervise command envelope: "+err.Error())
+		return writeCommandError(resultPointer, resultCapacity, "supervise command envelope: "+err.Error())
 	}
 	if envelope.Schema != "stado.dev/application-command/v1" || envelope.Application == "" || envelope.Sequence == 0 || envelope.Command != "supervise" {
-		return writeError(resultPointer, resultCapacity, "supervise command: invalid authenticated envelope")
+		return writeCommandError(resultPointer, resultCapacity, "supervise command: invalid authenticated envelope")
 	}
 	if envelope.Anchor.SessionID == "" || envelope.Anchor.SessionGeneration == 0 {
-		return writeError(resultPointer, resultCapacity, "supervise command: authenticated session identity unavailable")
+		return writeCommandError(resultPointer, resultCapacity, "supervise command: authenticated session identity unavailable")
 	}
 	if (app.loaded || app.setup != nil) && app.anchor != envelope.Anchor {
-		return writeError(resultPointer, resultCapacity, "supervise command: lifecycle application anchor changed")
+		return writeCommandError(resultPointer, resultCapacity, "supervise command: lifecycle application anchor changed")
 	}
 	if app.reloadRequired {
 		if err := app.ensureLoaded(envelope.Anchor); err != nil && !errors.Is(err, errNoSelectedContract) {
-			return writeError(resultPointer, resultCapacity, "supervise durable reload: "+err.Error())
+			return writeCommandError(resultPointer, resultCapacity, "supervise durable reload: "+err.Error())
 		}
 	}
 	// Cancellation remains an operator escape hatch even when a reviewing
@@ -502,12 +502,12 @@ func stadoPluginCommand(inputPointer, inputLength, resultPointer, resultCapacity
 	cancelCommand := strings.TrimSpace(envelope.Args) == "cancel"
 	if app.setup == nil && app.loaded && !cancelCommand {
 		if err := app.reconcileOperatorInputRoutes(); err != nil {
-			return writeError(resultPointer, resultCapacity, "supervise operator-input route: "+err.Error())
+			return writeCommandError(resultPointer, resultCapacity, "supervise operator-input route: "+err.Error())
 		}
 	}
 	result, err := app.handleCommand(envelope)
 	if err != nil {
-		return writeError(resultPointer, resultCapacity, "supervise command: "+err.Error())
+		return writeCommandError(resultPointer, resultCapacity, "supervise command: "+err.Error())
 	}
 	return writeJSON(resultPointer, resultCapacity, result)
 }
@@ -1264,6 +1264,12 @@ func writeError(pointer, capacity int32, message string) int32 {
 		return -1
 	}
 	return -int32(len(raw))
+}
+
+// Application commands return a strict CommandResult JSON object. Negative
+// lengths are reserved for model-tool callbacks and are invalid on this export.
+func writeCommandError(pointer, capacity int32, message string) int32 {
+	return writeJSON(pointer, capacity, map[string]string{"status": "error", "message": message})
 }
 
 func logMessage(level, message string) {

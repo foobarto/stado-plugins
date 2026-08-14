@@ -150,6 +150,7 @@ type memorySetting struct {
 type lifecycleAnchor struct {
 	SessionID         string `json:"session_id"`
 	SessionGeneration uint64 `json:"session_generation"`
+	CanonicalRepoID   string `json:"canonical_repo_id,omitempty"`
 }
 
 type lifecycleEnvelope struct {

@@ -78,6 +78,33 @@ func TestMigrationDigestAndReceiptNamesAreDeterministic(t *testing.T) {
 	}
 }
 
+func TestValidPageDigestRequiresPrefixedSHA256(t *testing.T) {
+	valid := "sha256:" + strings.Repeat("a", 64)
+	if !validPageDigest(valid) {
+		t.Fatalf("validPageDigest(%q) = false", valid)
+	}
+	for _, value := range []string{strings.Repeat("a", 64), "sha256:nope", "sha256:" + strings.Repeat("g", 64)} {
+		if validPageDigest(value) {
+			t.Fatalf("validPageDigest(%q) = true", value)
+		}
+	}
+}
+
+func TestArtifactWireShapeAcceptsCanonicalHostEnvelope(t *testing.T) {
+	raw := []byte(`{"api_version":"stado.dev/artifact/v1","id":"task-1","version":1,"kind":"example#task","kind_schema":{"plugin_identity":"example","plugin_commit":"0123456789012345678901234567890123456789","manifest_digest":"sha256:manifest","local_name":"task","schema_digest":"sha256:schema"},"scope":"global","scope_binding":{"principal":"operator","canonical_repo_id":"repo"},"authority":"candidate","tags":["stado:tasks"],"groups":[],"evidence_refs":[],"sensitivity":"normal","provenance":{"origins":["application"],"created_by":"plugin","refs":[]},"data":{"title":"wire task","status":"open","deleted":false},"created_at":"2026-08-14T12:00:00Z","updated_at":"2026-08-14T12:00:00Z","supersedes":[]}`)
+	var item artifact
+	if err := decodeStrict(raw, &item); err != nil {
+		t.Fatalf("decode canonical artifact envelope: %v", err)
+	}
+	view, data, err := artifactTask(item)
+	if err != nil {
+		t.Fatalf("project task artifact: %v", err)
+	}
+	if view.ID != "task-1" || data.Title != "wire task" || data.Status != "open" {
+		t.Fatalf("unexpected projection: view=%+v data=%+v", view, data)
+	}
+}
+
 func TestMigrationReceiptPinsImmutableVersionAcrossLaterEdit(t *testing.T) {
 	stamp := time.Date(2026, 8, 14, 1, 2, 3, 0, time.UTC)
 	legacy := []legacyTask{{ID: "old-1", Title: "one", Status: "open", CreatedAt: stamp, UpdatedAt: stamp}}

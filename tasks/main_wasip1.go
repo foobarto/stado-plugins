@@ -71,6 +71,7 @@ func stadoFree(pointer int32, size int32) {
 type lifecycleAnchor struct {
 	SessionID         string `json:"session_id"`
 	SessionGeneration uint64 `json:"session_generation"`
+	CanonicalRepoID   string `json:"canonical_repo_id,omitempty"`
 }
 
 type commandEnvelope struct {
@@ -152,17 +153,17 @@ func stadoPluginCommand(inputPointer, inputLength, resultPointer, resultCapacity
 	defer appMu.Unlock()
 	var envelope commandEnvelope
 	if err := decodeStrict(wasmBytes(inputPointer, inputLength), &envelope); err != nil {
-		return writeError(resultPointer, resultCapacity, "tasks command envelope: "+err.Error())
+		return writeCommandError(resultPointer, resultCapacity, "tasks command envelope: "+err.Error())
 	}
 	if envelope.Schema != "stado.dev/application-command/v1" || envelope.Application == "" || envelope.Sequence == 0 || envelope.Command != "tasks" || envelope.Anchor.SessionID == "" || envelope.Anchor.SessionGeneration == 0 {
-		return writeError(resultPointer, resultCapacity, "tasks command: invalid authenticated envelope")
+		return writeCommandError(resultPointer, resultCapacity, "tasks command: invalid authenticated envelope")
 	}
 	if err := ensureLegacyMigrated(); err != nil {
-		return writeError(resultPointer, resultCapacity, "tasks legacy migration blocked: "+err.Error())
+		return writeCommandError(resultPointer, resultCapacity, "tasks legacy migration blocked: "+err.Error())
 	}
 	message, err := runCommand(strings.TrimSpace(envelope.Args))
 	if err != nil {
-		return writeError(resultPointer, resultCapacity, "tasks command: "+err.Error())
+		return writeCommandError(resultPointer, resultCapacity, "tasks command: "+err.Error())
 	}
 	return writeJSON(resultPointer, resultCapacity, map[string]string{"status": "ok", "message": message})
 }
@@ -532,7 +533,7 @@ func queryArtifacts(tags []string, maxTotal int) ([]artifact, error) {
 				return nil, err
 			}
 			var response queryResponse
-			if err := decodeStrict(raw, &response); err != nil || len(response.PageDigest) != 64 {
+			if err := decodeStrict(raw, &response); err != nil || !validPageDigest(response.PageDigest) {
 				return nil, errors.New("artifact broker returned invalid paginated task projection")
 			}
 			if digest != "" && response.PageDigest != digest {
@@ -670,7 +671,7 @@ func queryExactRefs(refs []migrationRef) ([]artifact, error) {
 			return nil, err
 		}
 		var response queryResponse
-		if err := decodeStrict(raw, &response); err != nil || !response.Complete || len(response.PageDigest) != 64 || len(response.Items) != len(wireRefs) {
+		if err := decodeStrict(raw, &response); err != nil || !response.Complete || !validPageDigest(response.PageDigest) || len(response.Items) != len(wireRefs) {
 			return nil, errors.New("artifact broker did not return the exact bounded migration proof refs")
 		}
 		all = append(all, response.Items...)
@@ -878,4 +879,11 @@ func writeError(pointer, capacity int32, message string) int32 {
 		return -1
 	}
 	return -int32(len(data))
+}
+
+// Application commands use a strict JSON result envelope. Negative lengths
+// are reserved for model-tool callbacks and are rejected by RunCommand before
+// it can decode a useful diagnostic.
+func writeCommandError(pointer, capacity int32, message string) int32 {
+	return writeJSON(pointer, capacity, map[string]string{"status": "error", "message": message})
 }

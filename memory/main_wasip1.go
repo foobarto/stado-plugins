@@ -176,10 +176,10 @@ func stadoPluginCommand(inputPointer, inputLength, resultPointer, resultCapacity
 	var envelope commandEnvelope
 	if err := decodeStrict(wasmBytes(inputPointer, inputLength), &envelope); err != nil || envelope.Schema != "stado.dev/application-command/v1" ||
 		envelope.Application == "" || envelope.Anchor.SessionID == "" || envelope.Anchor.SessionGeneration == 0 || envelope.Sequence == 0 {
-		return writeError(resultPointer, resultCapacity, "memory command: invalid authenticated envelope")
+		return writeCommandError(resultPointer, resultCapacity, "memory command: invalid authenticated envelope")
 	}
 	if err := ensureLegacyMigrated(); err != nil {
-		return writeError(resultPointer, resultCapacity, "legacy memory migration blocked: "+err.Error())
+		return writeCommandError(resultPointer, resultCapacity, "legacy memory migration blocked: "+err.Error())
 	}
 	var message string
 	var err error
@@ -200,7 +200,7 @@ func stadoPluginCommand(inputPointer, inputLength, resultPointer, resultCapacity
 		err = errors.New("unsupported memory application command")
 	}
 	if err != nil {
-		return writeError(resultPointer, resultCapacity, err.Error())
+		return writeCommandError(resultPointer, resultCapacity, err.Error())
 	}
 	return writeJSON(resultPointer, resultCapacity, map[string]string{"status": "ok", "message": message})
 }
@@ -653,4 +653,14 @@ func writeError(pointer, capacity int32, message string) int32 {
 		return -1
 	}
 	return -n
+}
+
+// Application commands return a strict CommandResult JSON object. Negative
+// lengths are the model-tool error convention and are invalid on this export.
+func writeCommandError(pointer, capacity int32, message string) int32 {
+	n := writeJSON(pointer, capacity, map[string]string{"status": "error", "message": message})
+	if n <= 0 {
+		return -1
+	}
+	return n
 }

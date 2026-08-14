@@ -33,13 +33,45 @@ type taskData struct {
 }
 
 type artifact struct {
-	ID        string          `json:"id"`
-	Version   uint64          `json:"version"`
-	Authority string          `json:"authority"`
-	Tags      []string        `json:"tags,omitempty"`
-	Data      json.RawMessage `json:"data"`
-	CreatedAt time.Time       `json:"created_at"`
-	UpdatedAt time.Time       `json:"updated_at"`
+	APIVersion   string          `json:"api_version"`
+	ID           string          `json:"id"`
+	Version      uint64          `json:"version"`
+	Kind         string          `json:"kind"`
+	KindSchema   kindSchema      `json:"kind_schema"`
+	Scope        string          `json:"scope"`
+	Binding      scopeBinding    `json:"scope_binding"`
+	Authority    string          `json:"authority"`
+	Tags         []string        `json:"tags,omitempty"`
+	Groups       []string        `json:"groups,omitempty"`
+	EvidenceRefs []string        `json:"evidence_refs,omitempty"`
+	Sensitivity  string          `json:"sensitivity"`
+	Provenance   provenance      `json:"provenance"`
+	Data         json.RawMessage `json:"data"`
+	CreatedAt    time.Time       `json:"created_at"`
+	UpdatedAt    time.Time       `json:"updated_at"`
+	ExpiresAt    time.Time       `json:"expires_at,omitempty"`
+	Supersedes   []string        `json:"supersedes,omitempty"`
+}
+
+type kindSchema struct {
+	PluginIdentity string `json:"plugin_identity"`
+	PluginCommit   string `json:"plugin_commit,omitempty"`
+	ManifestDigest string `json:"manifest_digest"`
+	LocalName      string `json:"local_name"`
+	SchemaDigest   string `json:"schema_digest"`
+}
+
+type scopeBinding struct {
+	Principal       string `json:"principal"`
+	CanonicalRepoID string `json:"canonical_repo_id,omitempty"`
+	AnchorSessionID string `json:"anchor_session_id,omitempty"`
+	AnchorForkPoint string `json:"anchor_fork_point,omitempty"`
+}
+
+type provenance struct {
+	Origins   []string `json:"origins,omitempty"`
+	CreatedBy string   `json:"created_by,omitempty"`
+	Refs      []string `json:"refs,omitempty"`
 }
 
 type taskView struct {
@@ -196,6 +228,14 @@ func legacyData(task legacyTask) taskData {
 func digestBytes(raw []byte) string {
 	sum := sha256.Sum256(raw)
 	return hex.EncodeToString(sum[:])
+}
+
+func validPageDigest(value string) bool {
+	if !strings.HasPrefix(value, "sha256:") || len(value) != len("sha256:")+64 {
+		return false
+	}
+	_, err := hex.DecodeString(strings.TrimPrefix(value, "sha256:"))
+	return err == nil
 }
 
 func migrationTag(digest string) string { return "stado:tasks-legacy:" + digest }

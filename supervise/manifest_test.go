@@ -39,7 +39,7 @@ func TestManifestDeclaresBoundedInteractiveCommandAndWorkerBridges(t *testing.T)
 	if err := json.Unmarshal(raw, &manifest); err != nil {
 		t.Fatal(err)
 	}
-	if manifest.Version != "0.1.0-dev.20260814" || manifest.MinStadoVersion != "0.80.0" {
+	if manifest.Version != "0.1.0" || manifest.MinStadoVersion != "0.80.0" {
 		t.Fatalf("plugin package version and minimum host version were conflated: package=%q min_stado=%q", manifest.Version, manifest.MinStadoVersion)
 	}
 	if len(manifest.Commands) != 1 || manifest.Commands[0].Name != "supervise" || manifest.Commands[0].TimeoutMS != 900000 {

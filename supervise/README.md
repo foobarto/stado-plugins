@@ -1,18 +1,16 @@
 # supervise
 
-Development source for the official, signed/installable stado supervision
-application. It is an application-sized WASI plugin, not bundled native stado
-workflow code.
+Source for the official, signed/installable stado supervision application. It
+is an application-sized WASI plugin, not bundled native stado workflow code.
 
-This directory is intentionally unpublished and unsigned. The temporary
-manifest identifies a development build, and `build.sh` never invokes the
-offline signing key. Do not copy its `dist/` output into a release.
+`build.sh` always produces an unsigned reproducible bundle and never invokes
+the offline signing key. The signed `dist/` bundle is created only during the
+release ceremony and is immutable at the package tag.
 
-The intended first immutable package is plugin version `0.1.0`, tagged
+The first immutable package is plugin version `0.1.0`, tagged
 `supervise/v0.1.0`. Its host compatibility floor is separately
 `min_stado_version: 0.80.0`; the plugin package is not versioned as stado
-`0.80.0`. This development tree must remain unsigned until release-key access
-and the cross-repository release proof are available.
+`0.80.0`.
 
 ## What lives here
 
@@ -319,7 +317,7 @@ same pending effect rather than duplicating policy. Native command execution is
 at-least-once across the irreducible command-finished/before-terminal-WAL crash
 window; only digests and factual outcomes cross back into the plugin.
 
-## Development build
+## Reproducible unsigned build
 
 ```sh
 GOCACHE=/tmp/stado-plugins-go-cache go test ./...
@@ -327,7 +325,7 @@ SUPERVISE_BUILD_DIR=/tmp/supervise-build ./build.sh
 ./check.sh
 ```
 
-The build produces `plugin.wasm` and a digest-filled development manifest in
+The build produces `plugin.wasm` and a digest-filled unsigned manifest in
 `SUPERVISE_BUILD_DIR` (default `dist/`). It does not produce a signature.
 `check.sh` keeps both reproducibility builds in temporary directories and also
 builds the plugin-owned evaluator, validates all six scenarios, and scores the

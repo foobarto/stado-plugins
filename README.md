@@ -42,7 +42,7 @@ signature against the anchor, checks the wasm digest, and installs.
 | `persistent-shell` | A shell whose working dir + env persist across tool calls. |
 | `research` | Ordinary isolated memory/session research tools plus package-bound child-only evidence helpers; unsigned source staged for stado 0.80.0. |
 | `skills` | Explicit opt-in model skill search/open over digest-fenced context facts; unsigned source staged for stado 0.80.0. |
-| `supervise` | Official lifecycle supervision quality-gate application for stado 0.80.0 and newer; source and evals are staged, signed release bundle pending. |
+| `supervise` | Official lifecycle supervision quality-gate application for stado 0.80.0 and newer; signed package `supervise/v0.1.0`. |
 | `tasks` | Explicit opt-in TUI lifecycle application for global broker-artifact tasks, logical tombstones, and fail-closed one-way JSON import; unsigned source staged for stado 0.80.0. |
 | `tool-registry` | Explicit opt-in discovery and atomic session tool-surface policy over authenticated registry facts; unsigned source staged for stado 0.80.0. |
 | `web-search` | Web search tool. |
@@ -52,12 +52,12 @@ signature against the anchor, checks the wasm digest, and installs.
 | `state-dir-info` | Reports the plugin's state-dir wiring; example of `state:` caps. |
 
 Each released plugin's capabilities and tools are declared in its
-`<plugin>/dist/plugin.manifest.json` — review them before installing. Before
-the first signed supervise release, its proposed surface is visible in
-`supervise/plugin.manifest.template.json` and no unsigned `dist/` bundle is
-committed. Other staged packages likewise expose their proposed contracts in
-source-adjacent manifest templates; unsigned generated bundles are not release
-artifacts.
+`<plugin>/dist/plugin.manifest.json` — review them before installing. The
+supervise source contract remains visible in
+`supervise/plugin.manifest.template.json`; its committed `dist/` is the exact
+offline-key-signed release bundle. Other staged packages expose their proposed
+contracts in source-adjacent manifest templates; unsigned generated bundles
+are not release artifacts.
 
 ## Versioning
 

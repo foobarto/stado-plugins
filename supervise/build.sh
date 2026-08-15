@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Development build only. This deliberately does not sign or publish anything.
+# Reproducible unsigned build. Release signing remains a separate offline step.
 
 set -euo pipefail
 
@@ -18,6 +18,6 @@ digest="$(sha256sum "$output_dir/plugin.wasm" | awk '{print $1}')"
 sed "s/\"wasm_sha256\": \"\"/\"wasm_sha256\": \"${digest}\"/" \
   plugin.manifest.template.json > "$output_dir/plugin.manifest.json"
 
-echo "development wasm: $output_dir/plugin.wasm"
-echo "development manifest: $output_dir/plugin.manifest.json"
+echo "unsigned wasm: $output_dir/plugin.wasm"
+echo "unsigned manifest: $output_dir/plugin.manifest.json"
 echo "unsigned by design; no plugin.manifest.sig was produced"

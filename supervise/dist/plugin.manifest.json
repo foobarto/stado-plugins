@@ -2,8 +2,8 @@
   "name": "supervise",
   "version": "0.1.0",
   "author": "foobarto",
-  "author_pubkey_fpr": "",
-  "wasm_sha256": "",
+  "author_pubkey_fpr": "57a3e58ce484c5e5",
+  "wasm_sha256": "9d5925cb6fb2b1227a3e7eed441d497e972e59c36d07b1af30eb1069b8da7fda",
   "capabilities": [
     "artifact:propose:supervision-contract",
     "artifact:read:self#supervision-contract",
@@ -39,22 +39,28 @@
       "name": "supervise__report_progress",
       "description": "Attach host evidence to one criterion in the selected session-scoped supervision contract and optionally claim the exact current plan step for watchdog review.",
       "class": "StateMutating",
-      "application_worker": {"plan_visible": true},
-      "schema": "{\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"type\":\"object\",\"additionalProperties\":false,\"required\":[\"idempotency_key\",\"anchor\",\"criterion_index\",\"evidence_refs\"],\"properties\":{\"idempotency_key\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":64,\"pattern\":\"^[A-Za-z0-9._:-]+$\"},\"anchor\":{\"$ref\":\"#/$defs/anchor\"},\"criterion_index\":{\"type\":\"integer\",\"minimum\":0,\"maximum\":63},\"evidence_refs\":{\"$ref\":\"#/$defs/evidence_refs\"},\"complete_active_step\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":256}},\"$defs\":{\"anchor\":{\"type\":\"object\",\"additionalProperties\":false,\"required\":[\"session_sequence\",\"plan_version\",\"active_step\",\"tree_digest\",\"turn_ref\"],\"properties\":{\"session_sequence\":{\"type\":\"integer\",\"minimum\":1},\"plan_version\":{\"type\":\"integer\",\"minimum\":1},\"active_step\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":256},\"tree_digest\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":512},\"turn_ref\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":512}}},\"evidence_refs\":{\"type\":\"array\",\"minItems\":1,\"maxItems\":32,\"uniqueItems\":true,\"items\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":1024}}}}"
+      "schema": "{\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"type\":\"object\",\"additionalProperties\":false,\"required\":[\"idempotency_key\",\"anchor\",\"criterion_index\",\"evidence_refs\"],\"properties\":{\"idempotency_key\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":64,\"pattern\":\"^[A-Za-z0-9._:-]+$\"},\"anchor\":{\"$ref\":\"#/$defs/anchor\"},\"criterion_index\":{\"type\":\"integer\",\"minimum\":0,\"maximum\":63},\"evidence_refs\":{\"$ref\":\"#/$defs/evidence_refs\"},\"complete_active_step\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":256}},\"$defs\":{\"anchor\":{\"type\":\"object\",\"additionalProperties\":false,\"required\":[\"session_sequence\",\"plan_version\",\"active_step\",\"tree_digest\",\"turn_ref\"],\"properties\":{\"session_sequence\":{\"type\":\"integer\",\"minimum\":1},\"plan_version\":{\"type\":\"integer\",\"minimum\":1},\"active_step\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":256},\"tree_digest\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":512},\"turn_ref\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":512}}},\"evidence_refs\":{\"type\":\"array\",\"minItems\":1,\"maxItems\":32,\"uniqueItems\":true,\"items\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":1024}}}}",
+      "application_worker": {
+        "plan_visible": true
+      }
     },
     {
       "name": "supervise__request_pivot",
       "description": "Request current-anchor watchdog review of an exact structured replacement baseline; selection remains plugin policy and may require explicit quality confirmation.",
       "class": "StateMutating",
-      "application_worker": {"plan_visible": true},
-      "schema": "{\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"type\":\"object\",\"additionalProperties\":false,\"required\":[\"idempotency_key\",\"anchor\",\"rationale\",\"replacement\"],\"properties\":{\"idempotency_key\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":64,\"pattern\":\"^[A-Za-z0-9._:-]+$\"},\"anchor\":{\"$ref\":\"#/$defs/anchor\"},\"rationale\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":4096},\"replacement\":{\"$ref\":\"#/$defs/baseline\"}},\"$defs\":{\"anchor\":{\"type\":\"object\",\"additionalProperties\":false,\"required\":[\"session_sequence\",\"plan_version\",\"active_step\",\"tree_digest\",\"turn_ref\"],\"properties\":{\"session_sequence\":{\"type\":\"integer\",\"minimum\":1},\"plan_version\":{\"type\":\"integer\",\"minimum\":1},\"active_step\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":256},\"tree_digest\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":512},\"turn_ref\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":512}}},\"baseline\":{\"type\":\"object\",\"additionalProperties\":false,\"required\":[\"objective\",\"acceptance_criteria\",\"plan\",\"definition_of_done\",\"verification\"],\"properties\":{\"objective\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":4096},\"constraints\":{\"$ref\":\"#/$defs/bounded_list\"},\"non_goals\":{\"$ref\":\"#/$defs/bounded_list\"},\"acceptance_criteria\":{\"$ref\":\"#/$defs/required_list\"},\"plan\":{\"type\":\"array\",\"minItems\":1,\"maxItems\":64,\"items\":{\"type\":\"object\",\"additionalProperties\":false,\"required\":[\"id\",\"title\",\"done_when\"],\"properties\":{\"id\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":64},\"title\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":1024},\"done_when\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":4096}}}},\"definition_of_done\":{\"$ref\":\"#/$defs/required_list\"},\"verification\":{\"$ref\":\"#/$defs/required_list\"},\"risks\":{\"$ref\":\"#/$defs/bounded_list\"}}},\"bounded_list\":{\"type\":\"array\",\"maxItems\":64,\"items\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":4096}},\"required_list\":{\"type\":\"array\",\"minItems\":1,\"maxItems\":64,\"items\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":4096}}}}"
+      "schema": "{\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"type\":\"object\",\"additionalProperties\":false,\"required\":[\"idempotency_key\",\"anchor\",\"rationale\",\"replacement\"],\"properties\":{\"idempotency_key\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":64,\"pattern\":\"^[A-Za-z0-9._:-]+$\"},\"anchor\":{\"$ref\":\"#/$defs/anchor\"},\"rationale\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":4096},\"replacement\":{\"$ref\":\"#/$defs/baseline\"}},\"$defs\":{\"anchor\":{\"type\":\"object\",\"additionalProperties\":false,\"required\":[\"session_sequence\",\"plan_version\",\"active_step\",\"tree_digest\",\"turn_ref\"],\"properties\":{\"session_sequence\":{\"type\":\"integer\",\"minimum\":1},\"plan_version\":{\"type\":\"integer\",\"minimum\":1},\"active_step\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":256},\"tree_digest\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":512},\"turn_ref\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":512}}},\"baseline\":{\"type\":\"object\",\"additionalProperties\":false,\"required\":[\"objective\",\"acceptance_criteria\",\"plan\",\"definition_of_done\",\"verification\"],\"properties\":{\"objective\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":4096},\"constraints\":{\"$ref\":\"#/$defs/bounded_list\"},\"non_goals\":{\"$ref\":\"#/$defs/bounded_list\"},\"acceptance_criteria\":{\"$ref\":\"#/$defs/required_list\"},\"plan\":{\"type\":\"array\",\"minItems\":1,\"maxItems\":64,\"items\":{\"type\":\"object\",\"additionalProperties\":false,\"required\":[\"id\",\"title\",\"done_when\"],\"properties\":{\"id\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":64},\"title\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":1024},\"done_when\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":4096}}}},\"definition_of_done\":{\"$ref\":\"#/$defs/required_list\"},\"verification\":{\"$ref\":\"#/$defs/required_list\"},\"risks\":{\"$ref\":\"#/$defs/bounded_list\"}}},\"bounded_list\":{\"type\":\"array\",\"maxItems\":64,\"items\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":4096}},\"required_list\":{\"type\":\"array\",\"minItems\":1,\"maxItems\":64,\"items\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":4096}}}}",
+      "application_worker": {
+        "plan_visible": true
+      }
     },
     {
       "name": "supervise__request_completion",
       "description": "Submit criterion-linked host evidence for a watchdog-reviewed completion candidate at the exact current supervision anchor.",
       "class": "StateMutating",
-      "application_worker": {"plan_visible": true},
-      "schema": "{\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"type\":\"object\",\"additionalProperties\":false,\"required\":[\"idempotency_key\",\"anchor\",\"criteria\"],\"properties\":{\"idempotency_key\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":64,\"pattern\":\"^[A-Za-z0-9._:-]+$\"},\"anchor\":{\"$ref\":\"#/$defs/anchor\"},\"criteria\":{\"type\":\"array\",\"minItems\":1,\"maxItems\":64,\"items\":{\"type\":\"object\",\"additionalProperties\":false,\"required\":[\"criterion_index\",\"evidence_refs\"],\"properties\":{\"criterion_index\":{\"type\":\"integer\",\"minimum\":0,\"maximum\":63},\"evidence_refs\":{\"$ref\":\"#/$defs/evidence_refs\"}}}}},\"$defs\":{\"anchor\":{\"type\":\"object\",\"additionalProperties\":false,\"required\":[\"session_sequence\",\"plan_version\",\"active_step\",\"tree_digest\",\"turn_ref\"],\"properties\":{\"session_sequence\":{\"type\":\"integer\",\"minimum\":1},\"plan_version\":{\"type\":\"integer\",\"minimum\":1},\"active_step\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":256},\"tree_digest\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":512},\"turn_ref\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":512}}},\"evidence_refs\":{\"type\":\"array\",\"minItems\":1,\"maxItems\":32,\"uniqueItems\":true,\"items\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":1024}}}}"
+      "schema": "{\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"type\":\"object\",\"additionalProperties\":false,\"required\":[\"idempotency_key\",\"anchor\",\"criteria\"],\"properties\":{\"idempotency_key\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":64,\"pattern\":\"^[A-Za-z0-9._:-]+$\"},\"anchor\":{\"$ref\":\"#/$defs/anchor\"},\"criteria\":{\"type\":\"array\",\"minItems\":1,\"maxItems\":64,\"items\":{\"type\":\"object\",\"additionalProperties\":false,\"required\":[\"criterion_index\",\"evidence_refs\"],\"properties\":{\"criterion_index\":{\"type\":\"integer\",\"minimum\":0,\"maximum\":63},\"evidence_refs\":{\"$ref\":\"#/$defs/evidence_refs\"}}}}},\"$defs\":{\"anchor\":{\"type\":\"object\",\"additionalProperties\":false,\"required\":[\"session_sequence\",\"plan_version\",\"active_step\",\"tree_digest\",\"turn_ref\"],\"properties\":{\"session_sequence\":{\"type\":\"integer\",\"minimum\":1},\"plan_version\":{\"type\":\"integer\",\"minimum\":1},\"active_step\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":256},\"tree_digest\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":512},\"turn_ref\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":512}}},\"evidence_refs\":{\"type\":\"array\",\"minItems\":1,\"maxItems\":32,\"uniqueItems\":true,\"items\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":1024}}}}",
+      "application_worker": {
+        "plan_visible": true
+      }
     }
   ],
   "commands": [
@@ -70,15 +76,32 @@
       "name": "supervision-contract",
       "schema": "{\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"type\":\"object\",\"additionalProperties\":false,\"required\":[\"run_id\",\"objective\",\"acceptance_criteria\",\"plan\",\"definition_of_done\",\"verification\",\"config\"],\"properties\":{\"run_id\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":256},\"objective\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":4096},\"constraints\":{\"type\":\"array\",\"maxItems\":64,\"items\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":4096}},\"non_goals\":{\"type\":\"array\",\"maxItems\":64,\"items\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":4096}},\"acceptance_criteria\":{\"type\":\"array\",\"minItems\":1,\"maxItems\":64,\"items\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":4096}},\"plan\":{\"type\":\"array\",\"minItems\":1,\"maxItems\":64,\"items\":{\"type\":\"object\",\"additionalProperties\":false,\"required\":[\"id\",\"title\",\"done_when\"],\"properties\":{\"id\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":64},\"title\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":1024},\"done_when\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":4096}}}},\"definition_of_done\":{\"type\":\"array\",\"minItems\":1,\"maxItems\":64,\"items\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":4096}},\"verification\":{\"type\":\"array\",\"minItems\":1,\"maxItems\":64,\"items\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":4096}},\"risks\":{\"type\":\"array\",\"maxItems\":64,\"items\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":4096}},\"config\":{\"type\":\"object\",\"additionalProperties\":false,\"required\":[\"mode\",\"assurance_profile\",\"pivot_approval\",\"watchdog_token_budget\",\"verifier_token_budget\",\"event_review_retries\",\"failed_event_limit\",\"correction_limit\",\"live_retry_base_millis\",\"live_retry_max_millis\",\"hold_ttl_seconds\"],\"properties\":{\"mode\":{\"type\":\"string\",\"enum\":[\"event\",\"live\"]},\"assurance_profile\":{\"type\":\"string\",\"enum\":[\"standard\",\"high_assurance\",\"custom\"]},\"pivot_approval\":{\"type\":\"string\",\"enum\":[\"user\",\"watchdog\"]},\"review_every_turns\":{\"type\":\"integer\",\"minimum\":0,\"maximum\":10000},\"strict_live_barrier\":{\"type\":\"boolean\"},\"allowed_path_prefixes\":{\"type\":\"array\",\"maxItems\":64,\"items\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":512}},\"watchdog_provider\":{\"type\":\"string\",\"maxLength\":128},\"watchdog_model\":{\"type\":\"string\",\"maxLength\":256},\"watchdog_thinking\":{\"type\":\"string\",\"enum\":[\"auto\",\"on\",\"off\"]},\"watchdog_thinking_budget_tokens\":{\"type\":\"integer\",\"minimum\":0,\"maximum\":2000000},\"watchdog_reasoning_effort\":{\"type\":\"string\",\"enum\":[\"low\",\"medium\",\"high\",\"xhigh\",\"max\"]},\"verifier_provider\":{\"type\":\"string\",\"maxLength\":128},\"verifier_model\":{\"type\":\"string\",\"maxLength\":256},\"verifier_thinking\":{\"type\":\"string\",\"enum\":[\"auto\",\"on\",\"off\"]},\"verifier_thinking_budget_tokens\":{\"type\":\"integer\",\"minimum\":0,\"maximum\":2000000},\"verifier_reasoning_effort\":{\"type\":\"string\",\"enum\":[\"low\",\"medium\",\"high\",\"xhigh\",\"max\"]},\"watchdog_token_budget\":{\"type\":\"integer\",\"minimum\":1,\"maximum\":1000000},\"verifier_token_budget\":{\"type\":\"integer\",\"minimum\":1,\"maximum\":1000000},\"verifier_profile\":{\"type\":\"string\",\"enum\":[\"required\",\"advisory\"]},\"event_review_retries\":{\"type\":\"integer\",\"minimum\":1,\"maximum\":10},\"failed_event_limit\":{\"type\":\"integer\",\"minimum\":1,\"maximum\":100},\"correction_limit\":{\"type\":\"integer\",\"minimum\":1,\"maximum\":20},\"live_retry_base_millis\":{\"type\":\"integer\",\"minimum\":1,\"maximum\":300000},\"live_retry_max_millis\":{\"type\":\"integer\",\"minimum\":1,\"maximum\":300000},\"watchdog_timeout_seconds\":{\"type\":\"integer\",\"minimum\":0,\"maximum\":3600},\"hold_ttl_seconds\":{\"type\":\"integer\",\"minimum\":30,\"maximum\":3600}}}}}",
       "index": [
-        {"pointer": "/objective", "role": "title"},
-        {"pointer": "/acceptance_criteria", "role": "text"},
-        {"pointer": "/definition_of_done", "role": "text"}
+        {
+          "pointer": "/objective",
+          "role": "title"
+        },
+        {
+          "pointer": "/acceptance_criteria",
+          "role": "text"
+        },
+        {
+          "pointer": "/definition_of_done",
+          "role": "text"
+        }
       ]
     }
   ],
   "lifecycle": {
-    "points": ["pre_llm"],
-    "events": ["session.turn_committed", "session.verification_finished", "agent.down", "operator.input.queued", "timer.due"],
+    "points": [
+      "pre_llm"
+    ],
+    "events": [
+      "session.turn_committed",
+      "session.verification_finished",
+      "agent.down",
+      "operator.input.queued",
+      "timer.due"
+    ],
     "failure": "closed",
     "timeout_ms": 5000
   },

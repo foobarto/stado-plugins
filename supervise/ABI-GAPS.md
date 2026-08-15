@@ -171,15 +171,11 @@ backoff, and three unsuccessful correction follow-ups pause. Every attempt,
 due time, counter, handoff, and correction state is journal-replayable. A valid
 verdict resets the event-failure streak and survives later cleanup diagnostics.
 
-The following accepted EP-62/64 product behavior remains integration work, not
-permission to weaken the contract:
-
-1. a cross-repository integration proving that the landed automatic
-   compacted-child handoff preserves this existing application scope;
-
-The generic handoff is implemented and the plugin accepts only the exact
-authenticated parent/session scope; its full stado-plus-official-plugin
-integration still needs release proof.
+The previously open EP-62/64 automatic-compaction integration is closed. The
+cross-repository PTY proof installs the exact application, transfers the whole
+broker scope to an authenticated direct compacted child, rebinds the same
+WorkerRun once, advances it only from a child-anchored review, and performs
+terminal cleanup without duplicate or bypass recurrence.
 
 Reviewer and verifier admission now sends
 `source:{at:<authenticated turn_ref>}`. The host derives and

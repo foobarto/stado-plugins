@@ -31,7 +31,7 @@ func (a *application) resumePivot() (proposalCommandResult, error) {
 			return proposalCommandResult{}, err
 		}
 		if _, err := callHostJSON(stadoUIRender, map[string]any{
-			"title": "Proposed supervision pivot", "variant": "recommendation", "id": "supervise-pivot-" + pivot.ReplacementDigest,
+			"title": "Proposed supervision pivot", "variant": "recommendation", "id": pivotRenderID(pivot.ReplacementDigest),
 			"sections": []map[string]any{{"kind": "code", "heading": "Exact reviewed replacement", "code": map[string]string{"language": "json", "content": string(formatted)}}},
 			"footer":   "This confirms quality-workflow configuration only. It grants no OS authority, capability, or security approval.",
 		}); err != nil {

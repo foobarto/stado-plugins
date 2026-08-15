@@ -187,6 +187,19 @@ func (s *runState) observeWorkerRun(run applicationWorkerRun) (bool, error) {
 	return changed, nil
 }
 
+// cancellationHandoffRunID asks the native command host to reconcile local
+// recurrence state only when this workflow performed the broker's cancelled
+// transition. A pause/stop may already have terminalized the run as
+// interrupted/stopped; returning its ID as a cancellation handoff would make
+// the host correctly reject the non-cancelled projection after cleanup had
+// otherwise succeeded.
+func cancellationHandoffRunID(state runState) string {
+	if state.WorkerRunStatus == workerRunCancelled {
+		return state.RunID
+	}
+	return ""
+}
+
 func (s *runState) cancelWorkflow(reason string) error {
 	if s == nil || s.Schema != policySchema || s.Completed || !boundedRequired(reason, 4<<10) {
 		return errors.New("supervise workflow cannot be cancelled from its current state")

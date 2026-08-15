@@ -157,15 +157,52 @@ func TestWatchdogPromptCarriesExactStructuredPivot(t *testing.T) {
 	state, contract := activeToolState(t)
 	args := planPivot(t, &state, contract, "watchdog")
 	contract.Config = state.Config
-	if _, _, err := state.applyRequestPivot(contract, args); err != nil {
-		t.Fatal(err)
-	}
-	request, err := buildWatchdogSpawnRequest(contract, state.Config, state.PendingReview, state.Config.WatchdogTokenBudget)
+	change, _, err := state.applyRequestPivot(contract, args)
 	if err != nil {
 		t.Fatal(err)
 	}
+	var initialReview *reviewRequest
+	for _, item := range change.Actions {
+		if item.Kind == actionStartReview {
+			initialReview = item.Review
+		}
+	}
+	if initialReview == nil || initialReview.Pivot == nil {
+		t.Fatalf("initial review action lost the exact pivot: %+v", change)
+	}
+	request, err := buildWatchdogSpawnRequest(contract, state.Config, initialReview, state.Config.WatchdogTokenBudget)
+	if err != nil {
+		t.Fatal(err)
+	}
+	replay, err := buildWatchdogSpawnRequest(contract, state.Config, state.PendingReview, state.Config.WatchdogTokenBudget)
+	if err != nil {
+		t.Fatal(err)
+	}
+	initialJSON, err := json.Marshal(request)
+	if err != nil {
+		t.Fatal(err)
+	}
+	replayJSON, err := json.Marshal(replay)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(initialJSON) != string(replayJSON) {
+		t.Fatalf("initial and replayed pivot review spawns differ\ninitial: %s\nreplay:  %s", initialJSON, replayJSON)
+	}
 	if !strings.Contains(request.Prompt, `"pivot_proposal"`) || !strings.Contains(request.Prompt, state.PendingPivot.ReplacementDigest) || strings.Contains(request.Prompt, `"proposed_change"`) {
 		t.Fatalf("watchdog prompt lost strict pivot proposal: %s", request.Prompt)
+	}
+}
+
+func TestPivotRenderIDIsDeterministicAndWithinHostBound(t *testing.T) {
+	digestA := "sha256:" + strings.Repeat("a", 64)
+	digestB := "sha256:" + strings.Repeat("b", 64)
+	idA := pivotRenderID(digestA)
+	if idA != pivotRenderID(digestA) || idA == pivotRenderID(digestB) {
+		t.Fatalf("pivot render id is not deterministic and digest-bound: %q", idA)
+	}
+	if len(idA) == 0 || len(idA) > 64 {
+		t.Fatalf("pivot render id length=%d want 1..64: %q", len(idA), idA)
 	}
 }
 

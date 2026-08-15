@@ -51,6 +51,23 @@ func TestWorkerRunCancellationUsesOwnWALAnchorWithoutControlSequence(t *testing.
 	}
 }
 
+func TestCancellationHandoffNamesOnlyBrokerCancelledRun(t *testing.T) {
+	for _, test := range []struct {
+		status string
+		want   string
+	}{
+		{status: workerRunCancelled, want: "supervise-run-1"},
+		{status: workerRunInterrupted},
+		{status: workerRunStopped},
+		{status: workerRunCompleted},
+	} {
+		state := runState{RunID: "supervise-run-1", WorkerRunStatus: test.status}
+		if got := cancellationHandoffRunID(state); got != test.want {
+			t.Fatalf("status %q handoff=%q want %q", test.status, got, test.want)
+		}
+	}
+}
+
 func TestWorkerResumeRequestPreservesExactInterruptedIdentity(t *testing.T) {
 	contract := testWorkerContract(t)
 	interrupted := testWorkerRun(t, contract, workerRunInterrupted, 3)

@@ -7,6 +7,10 @@ import (
 	"fmt"
 )
 
+func pivotRenderID(replacementDigest string) string {
+	return "supervise-pivot-" + digestString(replacementDigest)[:32]
+}
+
 func baselineFromContract(contract supervisionContract) baseline {
 	return baseline{
 		Objective: contract.Objective, Constraints: append([]string(nil), contract.Constraints...),

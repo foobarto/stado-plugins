@@ -645,7 +645,7 @@ func (a *application) cancelWorkerRun() (proposalCommandResult, error) {
 		if err := a.finishRunCancellationCleanup(); err != nil {
 			return proposalCommandResult{}, err
 		}
-		return proposalCommandResult{Status: "ok", Message: "supervise workflow is already durably cancelled", CancelWorkerRunID: a.state.RunID}, nil
+		return proposalCommandResult{Status: "ok", Message: "supervise workflow is already durably cancelled", CancelWorkerRunID: cancellationHandoffRunID(a.state)}, nil
 	}
 	run, found, err := a.readExactWorkerRun()
 	if err != nil {
@@ -697,5 +697,5 @@ func (a *application) cancelWorkerRun() (proposalCommandResult, error) {
 	if err := a.finishRunCancellationCleanup(); err != nil {
 		return proposalCommandResult{}, err
 	}
-	return proposalCommandResult{Status: "ok", Message: "supervise workflow and its worker recurrence are durably cancelled", CancelWorkerRunID: a.state.RunID}, nil
+	return proposalCommandResult{Status: "ok", Message: "supervise workflow and its worker recurrence are durably cancelled", CancelWorkerRunID: cancellationHandoffRunID(a.state)}, nil
 }

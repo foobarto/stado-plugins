@@ -482,6 +482,12 @@ func (s *runState) observe(event workerEvent) (transition, error) {
 		return transition{Note: "coalesced behind active quality work"}, nil
 	}
 	review := &reviewRequest{ID: reviewID(event, signals), Anchor: event.Anchor, Signals: signals, Purpose: reviewPurposeWatchdog, Attempt: 1, Handoff: s.WatchdogHandoff}
+	if event.Kind == eventPivotRequested {
+		if s.PendingPivot == nil || s.PendingPivot.Stage != pivotStageReviewing || s.PendingPivot.Anchor != event.Anchor {
+			return transition{}, errors.New("pivot review lacks an exact current-anchor proposal")
+		}
+		review.Pivot = clonePivotCandidate(s.PendingPivot)
+	}
 	s.PendingReview = review
 	actions := make([]action, 0, 2)
 	if s.Config.Mode == modeLive && s.Config.StrictLiveBarrier {

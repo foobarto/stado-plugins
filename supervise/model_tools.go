@@ -185,7 +185,10 @@ func (s *runState) applyRequestPivot(contract supervisionContract, args requestP
 		s.PendingPivot = nil
 		return transition{}, modelToolResult{}, errors.New("pivot request did not create an independent review")
 	}
-	s.PendingReview.Pivot = clonePivotCandidate(pivot)
+	if s.PendingReview.Pivot == nil {
+		s.PendingPivot = nil
+		return transition{}, modelToolResult{}, errors.New("pivot request review lost its exact structured proposal")
+	}
 	if s.Hold == nil {
 		s.Hold = &holdState{Reason: "structured pivot requires current-anchor quality review"}
 		change.Actions = append([]action{{Kind: actionAcquireHold, Reason: s.Hold.Reason}}, change.Actions...)

@@ -158,8 +158,10 @@ completed, or stopped recurrence. An interrupted recurrence uses the generic
 `resume_worker_run_id` asks the native controller to reactivate the exact same
 run. Active holds keep that request pending and retryable rather than silently
 resuming. Successful application cancellation returns the distinct
-`cancel_worker_run_id`; the native host verifies the terminal projection before
-stopping its local turn and recurrence. UI origin is not treated as security authentication and no
+`cancel_worker_run_id` only for a broker run the application moved to
+`cancelled`; the native host verifies that terminal projection before stopping
+its local turn and recurrence. An already interrupted/stopped run is cleaned
+without a false cancellation handoff. UI origin is not treated as security authentication and no
 supervise-specific host import or native fallback was added.
 
 The complete EP-62 reviewer retry policy is plugin-owned and implemented:

@@ -75,3 +75,20 @@ func TestWorkerResumeCommandResultUsesDedicatedNativeHandoff(t *testing.T) {
 		t.Fatalf("resume result used initial activation field: %s", raw)
 	}
 }
+
+func TestWorkerCancellationCommandResultUsesDedicatedNativeHandoff(t *testing.T) {
+	result := proposalCommandResult{Status: "ok", Message: "cancelled", CancelWorkerRunID: "supervise-run-1"}
+	raw, err := json.Marshal(result)
+	if err != nil {
+		t.Fatal(err)
+	}
+	const want = `{"status":"ok","message":"cancelled","cancel_worker_run_id":"supervise-run-1"}`
+	if string(raw) != want {
+		t.Fatalf("worker cancellation command result\n got: %s\nwant: %s", raw, want)
+	}
+	for _, forbidden := range []string{"activation", "authority", "grant", "expected_version"} {
+		if strings.Contains(string(raw), forbidden) {
+			t.Fatalf("worker cancellation result conveyed host authority %q: %s", forbidden, raw)
+		}
+	}
+}

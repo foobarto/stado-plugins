@@ -117,7 +117,9 @@ expiry. It never revives a broker-terminal `cancelled`, `completed`, or
 `stopped` run. `/supervise cancel` CAS-cancels the exact requested,
 resume-requested, or active recurrence, cancels a pending review child, clears
 application policy work, and releases an exact hold. The cancellation is
-journalled before local cleanup; after cleanup, a new explicit setup may begin
+journalled before local cleanup and returns `cancel_worker_run_id`; the native
+host re-reads that exact terminal broker projection before stopping the local
+provider/tool turn and recurrence. After cleanup, a new explicit setup may begin
 in the same session.
 
 Cancellation does not become dormant merely because the local policy pointer

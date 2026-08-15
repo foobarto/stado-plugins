@@ -157,7 +157,9 @@ completed, or stopped recurrence. An interrupted recurrence uses the generic
 `session:worker:resume` CAS to enter `resume_requested`; the command's distinct
 `resume_worker_run_id` asks the native controller to reactivate the exact same
 run. Active holds keep that request pending and retryable rather than silently
-resuming. UI origin is not treated as security authentication and no
+resuming. Successful application cancellation returns the distinct
+`cancel_worker_run_id`; the native host verifies the terminal projection before
+stopping its local turn and recurrence. UI origin is not treated as security authentication and no
 supervise-specific host import or native fallback was added.
 
 The complete EP-62 reviewer retry policy is plugin-owned and implemented:

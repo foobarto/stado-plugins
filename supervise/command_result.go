@@ -11,6 +11,7 @@ type proposalCommandResult struct {
 	Message           string `json:"message,omitempty"`
 	WorkerRunID       string `json:"worker_run_id,omitempty"`
 	ResumeWorkerRunID string `json:"resume_worker_run_id,omitempty"`
+	CancelWorkerRunID string `json:"cancel_worker_run_id,omitempty"`
 }
 
 func newProposalCommandResult(artifactID string, expectedVersion uint64) (proposalCommandResult, error) {

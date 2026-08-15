@@ -1,9 +1,9 @@
 {
   "name": "supervise",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": "foobarto",
   "author_pubkey_fpr": "57a3e58ce484c5e5",
-  "wasm_sha256": "9d5925cb6fb2b1227a3e7eed441d497e972e59c36d07b1af30eb1069b8da7fda",
+  "wasm_sha256": "f4ce486e4a05c4fba7e597874cfb747e55e94347642b93cd4e34a6234c4f8ab6",
   "capabilities": [
     "artifact:propose:supervision-contract",
     "artifact:read:self#supervision-contract",

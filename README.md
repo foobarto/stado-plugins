@@ -42,7 +42,7 @@ signature against the anchor, checks the wasm digest, and installs.
 | `persistent-shell` | A shell whose working dir + env persist across tool calls. |
 | `research` | Ordinary isolated memory/session research tools plus package-bound child-only evidence helpers; unsigned source staged for stado 0.80.0. |
 | `skills` | Explicit opt-in model skill search/open over digest-fenced context facts; unsigned source staged for stado 0.80.0. |
-| `supervise` | Official lifecycle supervision quality-gate application for stado 0.80.0 and newer; signed package `supervise/v0.1.0`. |
+| `supervise` | Official lifecycle supervision quality-gate application for stado 0.80.0 and newer; current signed package `supervise/v0.1.1`. |
 | `tasks` | Explicit opt-in TUI lifecycle application for global broker-artifact tasks, logical tombstones, and fail-closed one-way JSON import; unsigned source staged for stado 0.80.0. |
 | `tool-registry` | Explicit opt-in discovery and atomic session tool-surface policy over authenticated registry facts; unsigned source staged for stado 0.80.0. |
 | `web-search` | Web search tool. |

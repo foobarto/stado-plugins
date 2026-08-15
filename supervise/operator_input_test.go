@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-const testApplicationCanonical = "github.com/foobarto/stado-plugins/supervise@v0.1.0"
+const testApplicationCanonical = "github.com/foobarto/stado-plugins/supervise@v0.1.1"
 
 func inputFact(runID, inputID string, ordinal uint64, text string) operatorInputQueuedFact {
 	return operatorInputQueuedFact{Schema: operatorInputSchema, InputID: inputID, RunID: runID, Version: 1, Ordinal: ordinal, Text: text, Digest: digestOperatorInput(text)}

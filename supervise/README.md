@@ -3,12 +3,16 @@
 Source for the official, signed/installable stado supervision application. It
 is an application-sized WASI plugin, not bundled native stado workflow code.
 
-`build.sh` always produces an unsigned reproducible bundle and never invokes
-the offline signing key. The signed `dist/` bundle is created only during the
-release ceremony and is immutable at the package tag.
+`build.sh` always produces an unsigned reproducible bundle with the pinned Go
+1.26.6 toolchain, trimmed source paths, and no Go build ID. It never invokes the
+offline signing key. `check.sh` also rejects an absolute `GOROOT` leak. The
+signed `dist/` bundle is created only during the release ceremony and is
+immutable at the package tag.
 
-The first immutable package is plugin version `0.1.0`, tagged
-`supervise/v0.1.0`. Its host compatibility floor is separately
+The first immutable package was plugin version `0.1.0`, tagged
+`supervise/v0.1.0`. Version `0.1.1` is the reproducibility correction: it pins
+the release compiler and removes absolute toolchain paths and the Go build ID
+from the WASM. Its host compatibility floor remains separately
 `min_stado_version: 0.80.0`; the plugin package is not versioned as stado
 `0.80.0`.
 

@@ -1,11 +1,58 @@
 package main
 
 import (
+	"crypto/sha256"
 	"encoding/json"
+	"fmt"
 	"os"
+	"reflect"
 	"slices"
 	"testing"
 )
+
+func TestCommittedReleaseBundleMatchesSource(t *testing.T) {
+	templateRaw, err := os.ReadFile("plugin.manifest.template.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	distRaw, err := os.ReadFile("dist/plugin.manifest.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	wasm, err := os.ReadFile("dist/plugin.wasm")
+	if err != nil {
+		t.Fatal(err)
+	}
+	sig, err := os.ReadFile("dist/plugin.manifest.sig")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(sig) == 0 {
+		t.Fatal("committed release signature is empty")
+	}
+
+	var templateManifest, distManifest map[string]any
+	if err := json.Unmarshal(templateRaw, &templateManifest); err != nil {
+		t.Fatal(err)
+	}
+	if err := json.Unmarshal(distRaw, &distManifest); err != nil {
+		t.Fatal(err)
+	}
+	wantDigest := fmt.Sprintf("%x", sha256.Sum256(wasm))
+	if got, _ := distManifest["wasm_sha256"].(string); got != wantDigest {
+		t.Fatalf("committed manifest wasm_sha256 = %q, want %q", got, wantDigest)
+	}
+	if got, _ := distManifest["author_pubkey_fpr"].(string); got == "" {
+		t.Fatal("committed release manifest has no signer fingerprint")
+	}
+	delete(templateManifest, "wasm_sha256")
+	delete(templateManifest, "author_pubkey_fpr")
+	delete(distManifest, "wasm_sha256")
+	delete(distManifest, "author_pubkey_fpr")
+	if !reflect.DeepEqual(templateManifest, distManifest) {
+		t.Fatal("committed release manifest does not match the source template")
+	}
+}
 
 func TestManifestDeclaresBoundedInteractiveCommandAndWorkerBridges(t *testing.T) {
 	raw, err := os.ReadFile("plugin.manifest.template.json")
@@ -39,7 +86,7 @@ func TestManifestDeclaresBoundedInteractiveCommandAndWorkerBridges(t *testing.T)
 	if err := json.Unmarshal(raw, &manifest); err != nil {
 		t.Fatal(err)
 	}
-	if manifest.Version != "0.1.0" || manifest.MinStadoVersion != "0.80.0" {
+	if manifest.Version != "0.1.1" || manifest.MinStadoVersion != "0.80.0" {
 		t.Fatalf("plugin package version and minimum host version were conflated: package=%q min_stado=%q", manifest.Version, manifest.MinStadoVersion)
 	}
 	if len(manifest.Commands) != 1 || manifest.Commands[0].Name != "supervise" || manifest.Commands[0].TimeoutMS != 900000 {

@@ -1055,11 +1055,11 @@ func (a *application) finishCompletionHandoff() error {
 		if err != nil {
 			return err
 		}
-		var completion completionHandoffAck
-		if err := decodeStrictBytes(raw, &completion); err != nil {
-			return errors.New("broker returned malformed successful-completion handoff")
+		completion, err := decodeCompletionHandoffAck(raw)
+		if err != nil {
+			return fmt.Errorf("broker returned malformed successful-completion handoff: %w", err)
 		}
-		if err := acceptCompletionHandoff(&a.state, completion); err != nil {
+		if err := acceptCompletionHandoff(&a.state, lifecycleIdentity{SessionID: a.anchor.SessionID, SessionGeneration: a.anchor.SessionGeneration}, completion); err != nil {
 			return err
 		}
 		if err := a.persist("run.handed_off", request.EvidenceRefs); err != nil {

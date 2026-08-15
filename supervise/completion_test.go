@@ -169,7 +169,9 @@ func TestVerifierCompletionBuildsStableGenericSuccessHandoff(t *testing.T) {
 	if request.RunID != state.RunID || request.IdempotencyKey == "" || request.Summary != "verified success" || len(request.EvidenceRefs) != 1 {
 		t.Fatalf("completion handoff lost verifier authority: %+v", request)
 	}
-	if err := acceptCompletionHandoff(&state, completionHandoffAck{ID: "completion-1", RunID: state.RunID}); err != nil {
+	ack := exactCompletionAck(t, state)
+	ack.ID = "completion-1"
+	if err := acceptCompletionHandoff(&state, testCompletionIdentity, ack); err != nil {
 		t.Fatal(err)
 	}
 	if !state.CompletionHandedOff || state.CompletionID != "completion-1" || state.Hold == nil {
@@ -198,10 +200,14 @@ func TestCompletionCarriesExactApplicationOrderedDeferredSet(t *testing.T) {
 	if !slices.Equal(request.ContinuationInputIDs, want) {
 		t.Fatalf("continuation input order=%v want=%v", request.ContinuationInputIDs, want)
 	}
-	if err := acceptCompletionHandoff(&state, completionHandoffAck{ID: "completion", RunID: state.RunID, ContinuationInputIDs: []string{"later-1"}}); err == nil {
+	ack := exactCompletionAck(t, state)
+	ack.ID = "completion"
+	ack.ContinuationInputIDs = []string{"later-1"}
+	if err := acceptCompletionHandoff(&state, testCompletionIdentity, ack); err == nil {
 		t.Fatal("broker acknowledgement omitted an application-selected deferred input")
 	}
-	if err := acceptCompletionHandoff(&state, completionHandoffAck{ID: "completion", RunID: state.RunID, ContinuationInputIDs: want}); err != nil {
+	ack.ContinuationInputIDs = want
+	if err := acceptCompletionHandoff(&state, testCompletionIdentity, ack); err != nil {
 		t.Fatal(err)
 	}
 }

@@ -174,10 +174,12 @@ func TestHoldRenewalTerminalCleanupAndFailureAreFailClosed(t *testing.T) {
 	broker := newFakeHoldBroker(clock, state)
 	clock.Advance(16 * time.Second)
 	state.Completed = true // plugin completion is not yet a host handoff
+	state.CompletedAnchor = &state.CurrentAnchor
+	state.CompletionVerdict = &verdict{Decision: verdictApprove, Anchor: state.CurrentAnchor, Rationale: "verified success"}
 	if renewed, err := maintainHoldLease(&state, clock.now, broker.renew); err != nil || !renewed {
 		t.Fatalf("pre-handoff completion stopped renewing early: renewed=%v err=%v", renewed, err)
 	}
-	if err := acceptCompletionHandoff(&state, completionHandoffAck{ID: "completion-exact", RunID: state.RunID}); err != nil {
+	if err := acceptCompletionHandoff(&state, testCompletionIdentity, exactCompletionAck(t, state)); err != nil {
 		t.Fatal(err)
 	}
 	clock.Advance(16 * time.Second)

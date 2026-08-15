@@ -387,7 +387,16 @@ func (s *runState) pendingHostVerificationTerminalTransition() transition {
 		return transition{Actions: release("operator configured no native verification suite"), Note: "no native suite existed; completion still requires fresh independent semantic verification"}
 	case "command_failed":
 		return transition{Actions: release("operator-configured verification rejected the completion tree"), Note: "verification failure returned factual correction context to the worker"}
-	case "infrastructure_error", "cancelled":
+	case "cancelled":
+		if result.FailureKind == "worker_terminal" {
+			// The broker has already made the worker terminal at a higher-
+			// precedence scheduling boundary. Submitting another pause here
+			// would survive an explicit resume and cancel the next exact-anchor
+			// verification, making completion unreachable.
+			return transition{Actions: release("operator-configured verification lost its already-terminal worker"), Note: "worker-terminal verification was retained without a redundant pause"}
+		}
+		fallthrough
+	case "infrastructure_error":
 		actions := release("operator-configured verification could not produce a usable result")
 		actions = append(actions, action{Kind: actionPause, OmitHold: true, Reason: "operator-configured verification ended with " + result.Outcome + " (" + result.FailureKind + ")"})
 		return transition{Actions: actions, Note: "verification infrastructure/cancellation paused without inferring completion"}
@@ -406,8 +415,26 @@ func (s *runState) markHostVerificationTerminalEffectsApplied() error {
 
 func (s *runState) hostVerificationGateEvidence() ([]string, error) {
 	result := s.LastHostVerification
-	if s.PendingHostVerification != nil || s.HostVerificationEffectPending || result == nil || !result.Usable || result.Discarded || result.Source != s.CurrentAnchor || (result.Outcome != "commands_succeeded" && result.Outcome != "no_suite") || !validHostFactDigest(result.SuiteDigest) || result.ID == "" {
-		return nil, errors.New("operator-configured verification has no exact terminal result eligible for independent completion review")
+	const unavailable = "operator-configured verification has no exact terminal result eligible for independent completion review"
+	switch {
+	case s.PendingHostVerification != nil:
+		return nil, errors.New(unavailable + ": verification is still pending")
+	case s.HostVerificationEffectPending:
+		return nil, errors.New(unavailable + ": terminal effects are not durable")
+	case result == nil:
+		return nil, errors.New(unavailable + ": no terminal result is recorded")
+	case result.Discarded:
+		return nil, errors.New(unavailable + ": terminal result was discarded")
+	case result.Source != s.CurrentAnchor:
+		return nil, errors.New(unavailable + ": terminal result belongs to a different turn anchor")
+	case result.Outcome != "commands_succeeded" && result.Outcome != "no_suite":
+		return nil, fmt.Errorf("%s: terminal outcome %q (%s) is not successful", unavailable, result.Outcome, result.FailureKind)
+	case !result.Usable:
+		return nil, errors.New(unavailable + ": successful terminal result is not usable")
+	case !validHostFactDigest(result.SuiteDigest):
+		return nil, errors.New(unavailable + ": terminal suite digest is invalid")
+	case result.ID == "":
+		return nil, errors.New(unavailable + ": terminal result identity is missing")
 	}
 	if result.Outcome == "no_suite" && len(result.CommandDigests) != 0 || result.Outcome == "commands_succeeded" && len(result.CommandDigests) == 0 {
 		return nil, errors.New("operator-configured verification result has an inconsistent suite shape")

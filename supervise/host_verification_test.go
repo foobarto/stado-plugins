@@ -249,7 +249,7 @@ func TestNoSuiteIsFactualGateWhileFailuresNeverApproveCompletion(t *testing.T) {
 	cancelledRecord := terminalHostVerification(request, "cancelled", []hostVerificationCommandFact{cancelledFact})
 	cancelledRecord.FailureKind = "worker_terminal"
 	change, _, err = cancelled.applyHostVerificationTerminal(cancelledRecord, testVerificationParent(), 90, verificationDigest("cancelled"), cancelledRecord.EvidenceRefs)
-	if err != nil || len(change.Actions) != 2 || change.Actions[1].Kind != actionPause {
+	if err != nil || len(change.Actions) != 1 || change.Actions[0].Kind != actionReleaseHold {
 		t.Fatalf("worker-terminal cancellation facts were rejected: change=%+v state=%+v err=%v", change, cancelled, err)
 	}
 }

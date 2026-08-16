@@ -20,10 +20,11 @@ Signing is **offline**: the private key never lives in this repo or its CI.
 ## Install
 
 ```bash
-stado plugin install github.com/foobarto/stado-plugins/<plugin>@<plugin>/v<version>
+stado plugin install github.com/foobarto/stado-plugins/<plugin>@v<version>
 ```
 
-stado resolves artefacts from `<plugin>/dist/` at the tagged tree
+The locator maps `@v<version>` to the immutable `<plugin>/v<version>` tag, then
+stado resolves artefacts from `<plugin>/dist/` at that tagged tree
 (`plugin.wasm` + `plugin.manifest.json` + `plugin.manifest.sig`), verifies the
 signature against the anchor, checks the wasm digest, and installs.
 

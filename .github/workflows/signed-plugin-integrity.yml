@@ -44,3 +44,31 @@ jobs:
 
       - name: Verify signatures and reproducible artifacts
         run: ./check-released-plugins.sh
+
+      - name: Check out current Stado host
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: foobarto/stado
+          path: .tmp/stado
+
+      - name: Build Stado bundled wasm
+        working-directory: .tmp/stado
+        run: bash plugins/bundled/build.sh
+
+      - name: Verify every released plugin against the current host ABI
+        run: |
+          set -euo pipefail
+          mapfile -t released < <(
+            jq -r '.plugins[] | select(.status == "released") | .path' \
+              plugin-inventory.json | LC_ALL=C sort
+          )
+          if [ "${#released[@]}" -eq 0 ]; then
+            echo "::error::released-plugin inventory is empty"
+            exit 1
+          fi
+          plugin_dirs=()
+          for plugin in "${released[@]}"; do
+            plugin_dirs+=("${GITHUB_WORKSPACE}/${plugin}/dist")
+          done
+          cd .tmp/stado
+          go run ./cmd/stado plugin abi-check "${plugin_dirs[@]}"

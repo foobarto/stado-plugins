@@ -69,8 +69,11 @@ are not release artifacts.
 classification. The signed-plugin integrity workflow runs on every pull
 request and every change to `main`. It verifies each released bundle against
 the repository public anchor, checks the signed manifest and WASM digest,
-rejects release artifacts on staged packages, and reproducibly rebuilds every
-released WASM. The offline signing seed is neither present nor needed in CI.
+rejects release artifacts on staged packages, reproducibly rebuilds every
+released WASM, and compiles each bundle against the current Stado host to
+compare every host import and required export by exact WebAssembly function
+signature. Stado CI runs the reciprocal check on host changes. The offline
+signing seed is neither present nor needed in CI.
 
 ## Versioning
 
@@ -113,7 +116,9 @@ checks source, documentation, manifest templates, generated manifests, and
 published WASM binaries for retired plugin ABI and capability forms.
 For Go guests it also validates the load-bearing raw-socket host-import
 declarations before reproducible builds bind those sources to the committed
-WASM.
+WASM. GitHub Actions then runs the current Stado host's non-executing
+`plugin abi-check` across every released bundle; this catches the complete
+compiled import/export signature matrix for Go, Zig, and Rust guests alike.
 `supervise/check.sh` additionally runs that application's unit, race, vet,
 reproducible WASI-build, evaluator-CLI, and scenario checks without signing or
 leaving a development bundle in the repository. `llm-invoke/check.sh` likewise

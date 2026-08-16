@@ -1,6 +1,6 @@
 {
   "name": "persistent-shell",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": "stado example",
   "author_pubkey_fpr": "",
   "wasm_sha256": "",
@@ -63,7 +63,7 @@
       "schema": "{\"type\":\"object\",\"properties\":{\"id\":{\"type\":\"integer\"}},\"required\":[\"id\"]}"
     }
   ],
-  "min_stado_version": "0.27.0",
-  "timestamp_utc": "2026-05-04T19:30:00Z",
-  "nonce": "persistent-shell-demo-001"
+  "min_stado_version": "0.80.0",
+  "timestamp_utc": "2026-08-16T00:00:00Z",
+  "nonce": "persistent-shell-v0.1.1-compat-001"
 }

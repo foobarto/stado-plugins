@@ -1,6 +1,6 @@
 {
   "name": "web-search",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": "stado example",
   "author_pubkey_fpr": "",
   "wasm_sha256": "",
@@ -15,7 +15,7 @@
       "schema": "{\"type\":\"object\",\"properties\":{\"query\":{\"type\":\"string\",\"description\":\"Search query.\"},\"max_results\":{\"type\":\"integer\",\"description\":\"Max results to return (1-50, default 10).\"},\"backend\":{\"type\":\"string\",\"enum\":[\"duckduckgo\",\"searxng\"],\"description\":\"Backend to use (default duckduckgo).\"},\"instance_url\":{\"type\":\"string\",\"description\":\"SearXNG instance URL, required when backend=searxng.\"}},\"required\":[\"query\"]}"
     }
   ],
-  "min_stado_version": "0.26.0",
-  "timestamp_utc": "2026-05-05T08:00:00Z",
-  "nonce": "web-search-demo-001"
+  "min_stado_version": "0.80.0",
+  "timestamp_utc": "2026-08-16T00:00:00Z",
+  "nonce": "web-search-v0.1.1-compat-001"
 }

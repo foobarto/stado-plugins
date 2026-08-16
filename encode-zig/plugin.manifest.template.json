@@ -1,6 +1,6 @@
 {
   "name": "encode-zig",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": "stado example",
   "author_pubkey_fpr": "",
   "wasm_sha256": "",
@@ -13,7 +13,7 @@
       "schema": "{\"type\":\"object\",\"properties\":{\"data\":{\"type\":\"string\",\"description\":\"input string to encode or decode\"},\"format\":{\"type\":\"string\",\"enum\":[\"base64\",\"base64url\",\"hex\",\"url\",\"html\"]},\"direction\":{\"type\":\"string\",\"enum\":[\"encode\",\"decode\"],\"description\":\"defaults to encode\"}},\"required\":[\"data\",\"format\"]}"
     }
   ],
-  "min_stado_version": "0.30.0",
-  "timestamp_utc": "2026-05-05T02:00:00Z",
-  "nonce": "encode-zig-001"
+  "min_stado_version": "0.80.0",
+  "timestamp_utc": "2026-08-16T00:00:00Z",
+  "nonce": "encode-zig-v0.1.1-compat-001"
 }

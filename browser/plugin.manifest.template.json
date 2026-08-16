@@ -1,6 +1,6 @@
 {
   "name": "browser",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "author": "stado",
   "author_pubkey_fpr": "",
   "wasm_sha256": "",
@@ -78,7 +78,7 @@
       "schema": "{\"type\":\"object\",\"properties\":{\"session_id\":{\"type\":\"string\"},\"selector\":{\"type\":\"string\",\"description\":\"CSS selector of scrollable element (omit to scroll the window)\"},\"delta\":{\"type\":\"integer\",\"description\":\"Relative scroll amount in pixels (positive=down, negative=up)\"},\"x\":{\"type\":\"integer\",\"description\":\"Absolute horizontal scroll position in pixels\"},\"y\":{\"type\":\"integer\",\"description\":\"Absolute vertical scroll position in pixels\"},\"behavior\":{\"type\":\"string\",\"enum\":[\"instant\",\"smooth\"],\"description\":\"Scroll behavior (default: instant)\"},\"wait_for_ms\":{\"type\":\"integer\",\"description\":\"Milliseconds to wait after scroll for lazy-loaded content (default 0)\"}},\"required\":[\"session_id\"]}"
     }
   ],
-  "min_stado_version": "0.33.0",
-  "timestamp_utc": "2026-05-05T00:00:00Z",
-  "nonce": "browser-v2-001"
+  "min_stado_version": "0.80.0",
+  "timestamp_utc": "2026-08-16T00:00:00Z",
+  "nonce": "browser-v0.2.1-compat-001"
 }

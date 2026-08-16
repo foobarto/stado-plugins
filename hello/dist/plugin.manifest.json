@@ -1,6 +1,6 @@
 {
   "name": "hello",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": "stado example",
   "author_pubkey_fpr": "57a3e58ce484c5e5",
   "wasm_sha256": "8478361f2dd85fff1aa6a730551661a23ab59f833e0804bc7df05b901f691dfe",
@@ -9,10 +9,11 @@
     {
       "name": "greet",
       "description": "Greet someone by name — reads { \"name\": \"...\" } and returns { \"message\": \"Hello, \u003cname\u003e!\" }.",
-      "schema": "{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\",\"description\":\"Name to greet\"}}}"
+      "schema": "{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\",\"description\":\"Name to greet\"}}}",
+      "capabilities": []
     }
   ],
-  "min_stado_version": "0.1.0",
-  "timestamp_utc": "2026-04-19T00:00:00Z",
-  "nonce": "hello-demo-001"
+  "min_stado_version": "0.80.0",
+  "timestamp_utc": "2026-08-16T00:00:00Z",
+  "nonce": "hello-v0.1.1-compat-001"
 }

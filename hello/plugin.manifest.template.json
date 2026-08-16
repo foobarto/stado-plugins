@@ -1,6 +1,6 @@
 {
   "name": "hello",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": "stado example",
   "author_pubkey_fpr": "",
   "wasm_sha256": "",
@@ -13,7 +13,7 @@
       "schema": "{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\",\"description\":\"Name to greet\"}}}"
     }
   ],
-  "min_stado_version": "0.1.0",
-  "timestamp_utc": "2026-04-19T00:00:00Z",
-  "nonce": "hello-demo-001"
+  "min_stado_version": "0.80.0",
+  "timestamp_utc": "2026-08-16T00:00:00Z",
+  "nonce": "hello-v0.1.1-compat-001"
 }

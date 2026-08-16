@@ -20,12 +20,16 @@ Signing is **offline**: the private key never lives in this repo or its CI.
 ## Install
 
 ```bash
-stado plugin install github.com/foobarto/stado-plugins/<plugin>@v0.1.0
+stado plugin install github.com/foobarto/stado-plugins/<plugin>@<plugin>/v<version>
 ```
 
 stado resolves artefacts from `<plugin>/dist/` at the tagged tree
 (`plugin.wasm` + `plugin.manifest.json` + `plugin.manifest.sig`), verifies the
 signature against the anchor, checks the wasm digest, and installs.
+
+The current releases are `browser/v0.2.1`, `supervise/v0.1.1`, and
+`<plugin>/v0.1.1` for every other released plugin listed below. Applications
+described as staged are source-reviewable drafts, not installable releases.
 
 ## Plugins
 
@@ -59,10 +63,17 @@ offline-key-signed release bundle. Other staged packages expose their proposed
 contracts in source-adjacent manifest templates; unsigned generated bundles
 are not release artifacts.
 
+`plugin-inventory.json` is the authoritative released/staged/source-only
+classification. The signed-plugin integrity workflow runs on every pull
+request and every change to `main`. It verifies each released bundle against
+the repository public anchor, checks the signed manifest and WASM digest,
+rejects release artifacts on staged packages, and reproducibly rebuilds every
+released WASM. The offline signing seed is neither present nor needed in CI.
+
 ## Versioning
 
-Tag `v0.1.0` is the first cut of the whole set. Future releases may move to
-per-plugin subdir tags (EP-39 §A) so plugins version independently.
+Tag `v0.1.0` is the first cut of the whole set. Current releases use per-plugin
+subdirectory tags (EP-39 §A), so plugins version independently.
 
 ## Provenance
 
@@ -93,7 +104,9 @@ submitted for inclusion in the work by you, as defined in the Apache-2.0
 license, shall be dual licensed as above, without any additional terms
 or conditions.
 
-Run `./check-obsolete-plugin-abi.sh` before submitting plugin changes. It
+Run `./check-released-plugins.sh` before submitting plugin changes. It includes
+`check-obsolete-plugin-abi.sh`, verifies every committed release with public
+key material only, and compares two clean builds with the committed WASM. It
 checks source, documentation, manifest templates, generated manifests, and
 published WASM binaries for retired plugin ABI and capability forms.
 `supervise/check.sh` additionally runs that application's unit, race, vet,

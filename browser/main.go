@@ -87,16 +87,16 @@ func stadoProcWait(h uint32) int32
 func stadoProcClose(h uint32)
 
 //go:wasmimport stado stado_net_dial
-func stadoNetDial(transportPtr, transportLen, addrPtr, addrLen uint32) uint32
+func stadoNetDial(transportPtr, transportLen, hostPtr, hostLen uint32, port, timeoutMs int32) int64
 
 //go:wasmimport stado stado_net_read
-func stadoNetRead(h, max, timeoutMs, bufPtr, bufCap uint32) int32
+func stadoNetRead(h, bufPtr, bufCap, timeoutMs uint32) int32
 
 //go:wasmimport stado stado_net_write
 func stadoNetWrite(h, bufPtr, bufLen uint32) int32
 
 //go:wasmimport stado stado_net_close
-func stadoNetClose(h uint32)
+func stadoNetClose(h uint32) int32
 
 // ── alloc / free (required ABI) ───────────────────────────────────────────
 
@@ -623,7 +623,7 @@ func wsHandshake(netHandle uint32, host, path string) error {
 	buf := make([]byte, 4096)
 	var full strings.Builder
 	for i := 0; i < 20; i++ {
-		n := stadoNetRead(netHandle, 4096, 500, ptr(buf), 4096)
+		n := stadoNetRead(netHandle, ptr(buf), 4096, 500)
 		if n <= 0 {
 			continue
 		}
@@ -678,7 +678,7 @@ func wsRecv(netHandle uint32, timeoutMs int) ([]byte, error) {
 		if tick > remaining {
 			tick = remaining
 		}
-		n := stadoNetRead(netHandle, uint32(netBufCap), uint32(tick), ptr(buf), uint32(netBufCap))
+		n := stadoNetRead(netHandle, ptr(buf), uint32(netBufCap), uint32(tick))
 		remaining -= tick
 		if n <= 0 {
 			if len(raw) > 0 {
@@ -780,26 +780,28 @@ func (s *cdpSession) send(method string, params map[string]any) (map[string]any,
 
 // cdpConnect parses the ws URL, dials, upgrades, and returns a fresh cdpSession.
 func cdpConnect(wsURL string) (*cdpSession, error) {
-	// Parse ws://127.0.0.1:PORT/json/version → host and path
-	wsURL = strings.TrimPrefix(wsURL, "ws://")
-	slashIdx := strings.Index(wsURL, "/")
-	host := wsURL
-	path := "/"
-	if slashIdx >= 0 {
-		host = wsURL[:slashIdx]
-		path = wsURL[slashIdx:]
+	// Parse ws://127.0.0.1:PORT/json/version into the current six-argument
+	// stado_net_dial ABI: host and port are separate, and the handle is i64.
+	endpoint, err := parseCDPWebSocketURL(wsURL)
+	if err != nil {
+		return nil, err
 	}
 
 	// Dial the raw TCP connection.
 	transport := []byte("tcp")
-	addr := []byte(host)
-	netH := stadoNetDial(ptr(transport), uint32(len(transport)), ptr(addr), uint32(len(addr)))
-	if netH == 0 {
-		return nil, fmt.Errorf("CDP: dial %s failed", host)
+	hostBytes := []byte(endpoint.host)
+	rawHandle := stadoNetDial(
+		ptr(transport), uint32(len(transport)),
+		ptr(hostBytes), uint32(len(hostBytes)),
+		int32(endpoint.port), 10000,
+	)
+	if rawHandle < 0 || rawHandle > int64(^uint32(0)) {
+		return nil, fmt.Errorf("CDP: dial %s failed", endpoint.hostHeader)
 	}
+	netH := uint32(rawHandle)
 
 	// WebSocket upgrade.
-	if err := wsHandshake(netH, host, path); err != nil {
+	if err := wsHandshake(netH, endpoint.hostHeader, endpoint.path); err != nil {
 		stadoNetClose(netH)
 		return nil, err
 	}

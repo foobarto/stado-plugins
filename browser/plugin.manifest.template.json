@@ -1,6 +1,6 @@
 {
   "name": "browser",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "author": "stado",
   "author_pubkey_fpr": "",
   "wasm_sha256": "",
@@ -80,5 +80,5 @@
   ],
   "min_stado_version": "0.80.0",
   "timestamp_utc": "2026-08-16T00:00:00Z",
-  "nonce": "browser-v0.2.1-compat-001"
+  "nonce": "browser-v0.2.2-net-dial-001"
 }

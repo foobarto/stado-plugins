@@ -1,6 +1,6 @@
 # persistent-shell
 
-Wraps stado's host-side PTY registry as nine plugin tools so an agent
+Wraps stado's host-side PTY registry as seven plugin tools so an agent
 can drive interactive shells across multiple tool calls.
 
 > Status: example plugin. Requires the `exec:pty` capability (added in
@@ -21,27 +21,24 @@ identifying sessions by uint64 id gives:
   one tool call is reachable from any later call without the wasm
   module having to keep state.
 - Per-session ring-buffered output (default 64 KiB, terminal
-  scrollback semantics) so a session can run *detached* while no one
-  is reading, then catch the reader up on attach.
+  scrollback semantics) so a session can run while no one is reading,
+  then let a later reader catch up.
 - Natural parallelism — every `shell.create` returns a fresh id;
   subagents can spawn independent sessions without coordination.
-- A single `attach` lock per session that single-threads read/write
-  but leaves out-of-band ops (signal, resize, destroy) freely
-  available — the same shape `tmux attach` / `screen` use.
+- Handle-based access across calls without a separate attach lock;
+  signal, resize, and destroy remain out-of-band operations.
 
 ## Tools
 
-| Tool | Args | Returns | Requires attach |
-|---|---|---|---|
-| `shell_create` | `argv`/`cmd`, `env`, `cwd`, `cols`, `rows`, `buffer_bytes` | `{id}` | n/a (creates detached) |
-| `shell_list` | — | `[{id, cmd, alive, attached, started_at, buffered, dropped, exit_code?}]` | n/a |
-| `shell_attach` | `id`, `force` | `{ok: true}` | claims |
-| `shell_detach` | `id` | `{ok: true}` | releases |
-| `shell_write` | `id`, `data` (UTF-8) **or** `data_b64` (raw) | `{n}` | yes |
-| `shell_read` | `id`, `max_bytes`, `timeout_ms` | `{data?, data_b64, n, eof?}` | yes |
-| `shell_signal` | `id`, `sig` (POSIX) | `{ok: true}` | no — out-of-band |
-| `shell_resize` | `id`, `cols`, `rows` | `{ok: true}` | no — out-of-band |
-| `shell_destroy` | `id` | `{ok: true}` | no |
+| Tool | Args | Returns |
+|---|---|---|
+| `shell_create` | `argv`/`cmd`, `env`, `cwd`, `cols`, `rows`, `buffer_bytes` | `{id}` |
+| `shell_list` | — | `[{id, cmd, alive, started_at, buffered, dropped, exit_code?}]` |
+| `shell_write` | `id`, `data` (UTF-8) **or** `data_b64` (raw) | `{n}` |
+| `shell_read` | `id`, `max_bytes`, `timeout_ms` | `{data?, data_b64, n, eof?}` |
+| `shell_signal` | `id`, `sig` (POSIX) | `{ok: true}` |
+| `shell_resize` | `id`, `cols`, `rows` | `{ok: true}` |
+| `shell_destroy` | `id` | `{ok: true}` |
 
 `shell_read` returns `data` (the bytes as a UTF-8 string) when the
 content looks like plain text and `data_b64` (always populated) for
@@ -53,10 +50,9 @@ the wire-safe form. Use `data_b64` when you need byte-exact handling
 ### Drive a long-lived bash
 
 ```jsonc
-// Create + attach.
+// Create.
 shell_create({"argv": ["/bin/bash"], "cols": 120, "rows": 40})
   // → {"id": 1}
-shell_attach({"id": 1})
 
 // Send commands.
 shell_write({"id": 1, "data": "id\n"})
@@ -73,13 +69,12 @@ shell_destroy({"id": 1})
 ### Catch a reverse shell while doing other work
 
 ```jsonc
-// Listener runs detached — output buffers in the ring.
+// Listener output buffers in the ring.
 shell_create({"cmd": "nc -lvnp 9001"})
   // → {"id": 2}
 // ... do other work ...
 
-// Later: attach + read everything that arrived.
-shell_attach({"id": 2})
+// Later: read everything that arrived.
 shell_read({"id": 2, "timeout_ms": 0})
   // → {"data": "connect to ...\n$ ", ...}
 shell_write({"id": 2, "data": "id\n"})
@@ -87,24 +82,14 @@ shell_write({"id": 2, "data": "id\n"})
 
 ### Hand a session off between subagents
 
-Parent attaches, dispatches a subagent with the id, parent detaches
-while the subagent works, parent re-attaches when the subagent is
-done. Both see the same backlog (up to ring capacity).
+Pass the PTY id to the subagent. Reads consume the shared byte stream, so
+coordinate which agent is reading even though the ABI no longer has a
+separate attach lock.
 
 ```jsonc
-// parent
-shell_attach({"id": 3})
-// ... initial setup ...
-shell_detach({"id": 3})
-// → spawn subagent, pass id=3 in its prompt
-
-// subagent
-shell_attach({"id": 3, "force": true})  // recovery if parent didn't detach
-// ... work ...
-shell_detach({"id": 3})
-
-// parent
-shell_attach({"id": 3})
+// parent creates and configures id=3, then passes it to a subagent
+// subagent writes/reads id=3, then returns ownership by convention
+// parent resumes reading
 shell_read({"id": 3, "timeout_ms": 0})  // sees what subagent did
 ```
 
@@ -133,9 +118,8 @@ operator-side plugins dir and `stado plugin install ./plugin.manifest.json`.
 
 ## Limitations
 
-- Single-attach-at-a-time per session. Multiple concurrent readers on
-  one PTY isn't supported (and rarely useful — bytes are consumed
-  on read).
+- Multiple concurrent readers on one PTY are not useful: bytes are consumed
+  on read. Coordinate handle ownership at the workflow level.
 - Ring buffer is byte-counted, not line-counted. Default 64 KiB —
   enough for ~800 lines of 80-col text. Override per session via
   `buffer_bytes` (4 KiB-4 MiB).

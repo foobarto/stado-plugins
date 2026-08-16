@@ -29,12 +29,19 @@ report_hits "obsolete plugin ABI/capability references:" \
     --glob '!.git/**' \
     --glob '!*.wasm' \
     --glob '!check-obsolete-plugin-abi.sh' \
-    '(terminal:open|stado_terminal_|net:http_get|stado_http_get)' .
+    --glob '!tools/abicheck/**' \
+    '(terminal:open|stado_terminal_|net:http_get|stado_http_get|stado_pty_attach|stado_pty_detach)' .
 
 report_hits "dist WASM binaries containing obsolete plugin ABI/capability references:" \
   rg -a -l \
     --glob '*/dist/*.wasm' \
-    '(terminal:open|stado_terminal_|net:http_get|stado_http_get)' .
+    '(terminal:open|stado_terminal_|net:http_get|stado_http_get|stado_pty_attach|stado_pty_detach)' .
+
+# Import names alone do not carry WebAssembly function types. Parse Go guest
+# declarations so a package cannot compile a stale socket signature and still
+# pass a name-only compatibility scan. The reproducible-build check later in
+# the workflow binds these checked sources to the committed dist WASM.
+go run ./tools/abicheck/main.go .
 
 # A bare net:<host> grant is obsolete. HTTP authority must be expressed as
 # net:http_request or net:http_request:<host>. Other current net namespaces

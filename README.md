@@ -28,9 +28,10 @@ stado resolves artefacts from `<plugin>/dist/` at that tagged tree
 (`plugin.wasm` + `plugin.manifest.json` + `plugin.manifest.sig`), verifies the
 signature against the anchor, checks the wasm digest, and installs.
 
-The current releases are `browser/v0.2.1`, `supervise/v0.1.1`, and
-`<plugin>/v0.1.1` for every other released plugin listed below. Applications
-described as staged are source-reviewable drafts, not installable releases.
+The current releases are `browser/v0.2.2`, `persistent-shell/v0.1.2`,
+`supervise/v0.1.1`, and `<plugin>/v0.1.1` for every other released plugin
+listed below. Applications described as staged are source-reviewable drafts,
+not installable releases.
 
 ## Plugins
 
@@ -110,6 +111,9 @@ Run `./check-released-plugins.sh` before submitting plugin changes. It includes
 key material only, and compares two clean builds with the committed WASM. It
 checks source, documentation, manifest templates, generated manifests, and
 published WASM binaries for retired plugin ABI and capability forms.
+For Go guests it also validates the load-bearing raw-socket host-import
+declarations before reproducible builds bind those sources to the committed
+WASM.
 `supervise/check.sh` additionally runs that application's unit, race, vet,
 reproducible WASI-build, evaluator-CLI, and scenario checks without signing or
 leaving a development bundle in the repository. `llm-invoke/check.sh` likewise

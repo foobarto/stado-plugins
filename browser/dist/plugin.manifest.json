@@ -1,9 +1,9 @@
 {
   "name": "browser",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "author": "stado",
   "author_pubkey_fpr": "57a3e58ce484c5e5",
-  "wasm_sha256": "d1f1d07622489c3ed1456fcd39bbf9c8e0e8ec4b11622512f7fcf0639610d0c1",
+  "wasm_sha256": "458d654569a37207035c31b626edc1058dca05aca6405f710fddb736d72f6f5e",
   "capabilities": [
     "net:http_request",
     "net:http_request_private",
@@ -106,5 +106,5 @@
   ],
   "min_stado_version": "0.80.0",
   "timestamp_utc": "2026-08-16T00:00:00Z",
-  "nonce": "browser-v0.2.1-compat-001"
+  "nonce": "browser-v0.2.2-net-dial-001"
 }

@@ -1,6 +1,6 @@
 // persistent-shell — wraps stado's host-side PTY registry
-// (internal/plugins/runtime/pty) as nine plugin tools: create, list,
-// attach, detach, write, read, signal, resize, destroy.
+// (internal/plugins/runtime/pty) as seven plugin tools: create, list,
+// write, read, signal, resize, destroy.
 //
 // Why this exists: every other tool a wasm plugin can drive is
 // stateless request→response. Real shell work — driving an `ssh`
@@ -12,23 +12,19 @@
 //
 // Mental model:
 //
-//	id = shell.create({argv: ["/bin/bash"]})       // detached, output buffering
-//	shell.attach({id: id})                          // claim it
+//	id = shell.create({argv: ["/bin/bash"]})       // output buffering starts
 //	shell.write({id: id, data: "id\n"})             // bytes in
 //	bytes = shell.read({id: id, timeout_ms: 500})   // bytes out (incl. ring replay)
-//	shell.detach({id: id})                          // release; PTY keeps running
 //	shell.destroy({id: id})                         // SIGTERM → grace → SIGKILL
 //
-// Single-attach-at-a-time per session. attach({force: true}) steals
-// the lock from a previous attacher (the recovery path for "subagent
-// crashed without detaching"). signal/resize/destroy don't require
-// attach — Ctrl-C and TUI repaint are out-of-band.
+// EP-0043 removed attach ownership from the host ABI. Read and write are
+// authorized by the PTY handle itself; signal/resize/destroy remain
+// out-of-band operations on that handle.
 package main
 
 import (
 	"encoding/base64"
 	"encoding/json"
-	"strings"
 	"sync"
 	"unsafe"
 )
@@ -43,12 +39,6 @@ func stadoPtyCreate(argsPtr, argsLen, resPtr, resCap uint32) int64
 
 //go:wasmimport stado stado_pty_list
 func stadoPtyList(bufPtr, bufCap uint32) int32
-
-//go:wasmimport stado stado_pty_attach
-func stadoPtyAttach(argsPtr, argsLen, resPtr, resCap uint32) int32
-
-//go:wasmimport stado stado_pty_detach
-func stadoPtyDetach(argsPtr, argsLen, resPtr, resCap uint32) int32
 
 //go:wasmimport stado stado_pty_write
 func stadoPtyWrite(idLo, idHi, bufPtr, bufLen, errPtr, errCap uint32) int32
@@ -156,39 +146,8 @@ func stadoToolShellList(_, _, resultPtr, resultCap int32) int32 {
 	return copyBytes(resultPtr, resultCap, scratch[:rc])
 }
 
-// ---------- shell.attach ----------
-
-type attachArgs struct {
-	ID    uint64 `json:"id"`
-	Force bool   `json:"force,omitempty"`
-}
-
 type okResult struct {
 	OK bool `json:"ok"`
-}
-
-//go:wasmexport stado_tool_shell_attach
-func stadoToolShellAttach(argsPtr, argsLen, resultPtr, resultCap int32) int32 {
-	var a attachArgs
-	if err := decodeArgs(argsPtr, argsLen, &a); err != nil {
-		return writeJSON(resultPtr, resultCap, errResult{Error: err.Error()})
-	}
-	return runHostJSONOp(stadoPtyAttach, a, resultPtr, resultCap)
-}
-
-// ---------- shell.detach ----------
-
-type detachArgs struct {
-	ID uint64 `json:"id"`
-}
-
-//go:wasmexport stado_tool_shell_detach
-func stadoToolShellDetach(argsPtr, argsLen, resultPtr, resultCap int32) int32 {
-	var a detachArgs
-	if err := decodeArgs(argsPtr, argsLen, &a); err != nil {
-		return writeJSON(resultPtr, resultCap, errResult{Error: err.Error()})
-	}
-	return runHostJSONOp(stadoPtyDetach, a, resultPtr, resultCap)
 }
 
 // ---------- shell.write ----------
@@ -443,6 +402,3 @@ func uint64ToStr(v uint64) string {
 	}
 	return string(buf[i:])
 }
-
-// silence unused-import warning when no string-helpers used.
-var _ = strings.Contains
